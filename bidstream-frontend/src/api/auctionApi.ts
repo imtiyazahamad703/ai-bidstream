@@ -36,7 +36,7 @@ export const auctionApi = {
   },
 
   getAuctionDetails: async (id: number): Promise<Auction> => {
-    const response = await axiosClient.get<Auction>(`/auctions/${id}`);
+    const response = await axiosClient.get<Auction>(`/public/auctions/${id}`);
     return response.data;
   },
 
@@ -45,5 +45,13 @@ export const auctionApi = {
       params: { query, category }
     });
     return response.data.content;
+  },
+
+  cancelAuction: async (id: number): Promise<void> => {
+    await axiosClient.delete(`/auctions/${id}/cancel`);
+  },
+
+  deleteAuction: async (id: number): Promise<void> => {
+    await axiosClient.delete(`/auctions/${id}`);
   }
 };

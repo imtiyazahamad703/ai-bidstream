@@ -3,9 +3,11 @@ import { axiosClient } from './axiosClient';
 export interface Bid {
   id: number;
   auctionId: number;
-  bidderId: number;
+  bidderEmail: string;
   amount: number;
-  timestamp: string;
+  createdAt: string;
+  status?: string;
+  trackingId?: string;
 }
 
 export const bidApi = {
@@ -17,5 +19,10 @@ export const bidApi = {
   getBidHistory: async (auctionId: number): Promise<Bid[]> => {
     const response = await axiosClient.get<any>(`/auctions/${auctionId}/bids`);
     return response.data.content;
+  },
+  
+  placeBid: async (auctionId: number, amount: number): Promise<Bid> => {
+    const response = await axiosClient.post<Bid>(`/auctions/${auctionId}/bids`, { amount });
+    return response.data;
   }
 };

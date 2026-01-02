@@ -26,5 +26,9 @@ export const authApi = {
   login: async (data: LoginData): Promise<AuthResponse> => {
     const response = await axiosClient.post<AuthResponse>('/auth/login', data);
     return response.data;
+  },
+  resetPassword: async (data: any): Promise<{message: string}> => {
+    const response = await axiosClient.post<{message: string}>('/auth/reset-password', data);
+    return response.data;
   }
 };

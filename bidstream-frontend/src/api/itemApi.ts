@@ -49,6 +49,11 @@ export const itemApi = {
     const response = await axiosClient.get<Item>(`/items/${id}`);
     return { ...response.data, title: response.data.name };
   },
+
+  getPublicItemDetails: async (id: string): Promise<Item> => {
+    const response = await axiosClient.get<Item>(`/public/items/${id}`);
+    return { ...response.data, title: response.data.name };
+  },
   
   deleteItem: async (id: string): Promise<void> => {
     await axiosClient.delete(`/items/${id}`);
@@ -57,5 +62,14 @@ export const itemApi = {
   uploadItemImage: async (id: string, imageData: string): Promise<Item> => {
     const response = await axiosClient.patch<Item>(`/items/${id}/image`, { imageData });
     return { ...response.data, title: response.data.name };
+  },
+
+  uploadItemDocuments: async (id: string, files: File[]): Promise<{ message: string; processedFiles: string[]; totalDocuments: number }> => {
+    const formData = new FormData();
+    files.forEach(file => formData.append('files', file));
+    const response = await axiosClient.post(`/items/${id}/documents`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
   }
 };
