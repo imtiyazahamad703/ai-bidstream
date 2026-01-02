@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import HomePage from './pages/HomePage';
 import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import { useAuthStore } from './store/useAuthStore';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
@@ -14,7 +15,7 @@ import ItemDetailPage from './pages/seller/ItemDetailPage';
 import AuctionCreatePage from './pages/seller/AuctionCreatePage';
 import AuctionListPage from './pages/seller/AuctionListPage';
 import ActiveAuctionsPage from './pages/ActiveAuctionsPage';
-import AuctionDetailPage from './pages/AuctionDetailPage';
+import LiveAuctionRoom from './pages/LiveAuctionRoom';
 import { wsService } from './api/stompClient';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -50,6 +51,7 @@ const App: React.FC = () => {
             <Route path="/" element={<HomePage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             
             {/* Protected Routes (Placeholders for now) */}
             <Route 
@@ -64,7 +66,7 @@ const App: React.FC = () => {
               path="/auctions/:id" 
               element={
                 <ProtectedRoute allowedRoles={['BIDDER', 'SELLER']}>
-                  <AuctionDetailPage />
+                  <LiveAuctionRoom />
                 </ProtectedRoute>
               } 
             />
