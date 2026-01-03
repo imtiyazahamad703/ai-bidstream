@@ -65,7 +65,10 @@ const LoginPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">Password</label>
+            <div className="flex justify-between mb-1">
+              <label className="block text-sm font-medium text-slate-300">Password</label>
+              <a href="/forgot-password" className="text-sm text-indigo-400 hover:text-indigo-300">Forgot password?</a>
+            </div>
             <input
               type="password"
               name="password"
