@@ -41,4 +41,17 @@ public class UserService {
     public Optional<User> getUserByEmail(String email) {
         return userRepository.findByEmail(email);
     }
+
+    @Transactional
+    public void resetPassword(com.bidstream.dto.PasswordResetDto dto) {
+        if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
+            throw new RuntimeException("New Password and Confirm Password do not match");
+        }
+        
+        User user = userRepository.findByEmail(dto.getEmail())
+                .orElseThrow(() -> new RuntimeException("User with this email not found"));
+                
+        user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+        userRepository.save(user);
+    }
 }

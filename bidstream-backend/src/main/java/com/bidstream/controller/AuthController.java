@@ -34,4 +34,10 @@ public class AuthController {
         User user = userService.getUserByEmail(loginRequest.getEmail()).orElseThrow(() -> new RuntimeException("User not found"));
         return ResponseEntity.ok(new LoginResponseDto(token, user));
     }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<java.util.Map<String, String>> resetPassword(@Valid @RequestBody com.bidstream.dto.PasswordResetDto resetDto) {
+        userService.resetPassword(resetDto);
+        return ResponseEntity.ok(java.util.Map.of("message", "Password reset successfully. You can now login."));
+    }
 }
