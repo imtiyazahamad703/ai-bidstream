@@ -4,6 +4,7 @@ import com.bidstream.dto.ItemRequestDto;
 import com.bidstream.dto.ItemResponseDto;
 import com.bidstream.entity.Item;
 import com.bidstream.service.ItemService;
+import com.bidstream.service.DocExtractionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -12,18 +13,23 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/items")
 public class ItemController {
 
     private final ItemService itemService;
+    private final DocExtractionService docExtractionService;
 
-    public ItemController(ItemService itemService) {
+    public ItemController(ItemService itemService, DocExtractionService docExtractionService) {
         this.itemService = itemService;
+        this.docExtractionService = docExtractionService;
     }
 
     @PostMapping
@@ -122,6 +128,79 @@ public class ItemController {
         
         itemService.deleteItem(id, sellerEmail);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Upload PDF/DOC/DOCX documents for an item.
+     * Extracts text and stores it in item's documentTexts for RAG embedding.
+     */
+    @PostMapping("/{id}/documents")
+    @PreAuthorize("hasRole('SELLER')")
+    public ResponseEntity<?> uploadDocuments(
+            @PathVariable String id,
+            @RequestParam("files") List<MultipartFile> files) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String sellerEmail = authentication.getName();
+        
+        Item item = itemService.getItemById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Item not found"));
+        itemService.verifyItemOwnership(item, sellerEmail);
+
+        // Validate files
+        long MAX_SIZE = 10 * 1024 * 1024; // 10MB per file
+        List<String> allowedTypes = List.of("application/pdf", "application/msword",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        
+        List<String> extractedTexts = item.getDocumentTexts() != null 
+                ? new ArrayList<>(item.getDocumentTexts()) 
+                : new ArrayList<>();
+        List<String> processedFiles = new ArrayList<>();
+
+        for (MultipartFile file : files) {
+            if (file.isEmpty()) continue;
+            
+            if (file.getSize() > MAX_SIZE) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "error", "File '" + file.getOriginalFilename() + "' exceeds 10MB limit"));
+            }
+            
+            String contentType = file.getContentType();
+            String fileName = file.getOriginalFilename();
+            if (fileName == null) continue;
+            
+            String lowerName = fileName.toLowerCase();
+            boolean isAllowed = allowedTypes.contains(contentType) 
+                    || lowerName.endsWith(".pdf") 
+                    || lowerName.endsWith(".doc") 
+                    || lowerName.endsWith(".docx");
+            
+            if (!isAllowed) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "error", "File '" + fileName + "' is not a supported type. Only PDF, DOC, DOCX allowed."));
+            }
+
+            try {
+                String extractedText = docExtractionService.extractText(file);
+                if (extractedText != null && !extractedText.trim().isEmpty()) {
+                    // Prefix with filename for source tracking
+                    extractedTexts.add("[Source: " + fileName + "]\n" + extractedText.trim());
+                    processedFiles.add(fileName);
+                }
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Failed to process file '" + fileName + "': " + e.getMessage()));
+            }
+        }
+
+        // Save extracted texts to item
+        item.setDocumentTexts(extractedTexts);
+        itemService.saveItem(item);
+
+        return ResponseEntity.ok(Map.of(
+            "message", "Documents processed successfully",
+            "processedFiles", processedFiles,
+            "totalDocuments", extractedTexts.size()
+        ));
     }
 
     private ItemResponseDto mapToDto(Item item) {

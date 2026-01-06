@@ -72,6 +72,12 @@ public class ItemService {
             if (updatedData.getImageData() != null) {
                 existingItem.setImageData(updatedData.getImageData());
             }
+            if (updatedData.getStatus() != null) {
+                existingItem.setStatus(updatedData.getStatus());
+            }
+            if (updatedData.getAuctionId() != null) {
+                existingItem.setAuctionId(updatedData.getAuctionId());
+            }
             return itemRepository.save(existingItem);
         }).orElseThrow(() -> new IllegalArgumentException("Item not found"));
     }
@@ -90,7 +96,7 @@ public class ItemService {
     }
     
     public void verifyItemOwnership(Item item, String sellerEmail) {
-        if (!item.getSellerEmail().equals(sellerEmail)) {
+        if (item.getSellerEmail() == null || !item.getSellerEmail().equals(sellerEmail)) {
             throw new org.springframework.security.access.AccessDeniedException("You do not own this item");
         }
     }

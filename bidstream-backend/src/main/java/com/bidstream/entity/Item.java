@@ -22,6 +22,9 @@ public class Item {
     // Base64 encoded image stored in MongoDB
     private String imageData;
     
+    // Extracted text from uploaded PDF/DOC documents for RAG embedding
+    private java.util.List<String> documentTexts;
+    
     // Linking to auction (Phase 4)
     private Long auctionId;
     
@@ -43,6 +46,8 @@ public class Item {
     public void setAttributes(Map<String, Object> attributes) { this.attributes = attributes; }
     public String getImageData() { return imageData; }
     public void setImageData(String imageData) { this.imageData = imageData; }
+    public java.util.List<String> getDocumentTexts() { return documentTexts; }
+    public void setDocumentTexts(java.util.List<String> documentTexts) { this.documentTexts = documentTexts; }
     public Long getAuctionId() { return auctionId; }
     public void setAuctionId(Long auctionId) { this.auctionId = auctionId; }
     public ItemStatus getStatus() { return status; }
