@@ -50,6 +50,33 @@ const AuctionListPage: React.FC = () => {
     }
   };
 
+  const handleDeleteAuction = async (auctionId: number) => {
+    if (!window.confirm('Are you sure you want to completely delete this auction? The item will be returned to your inventory.')) {
+      return;
+    }
+    
+    try {
+      await auctionApi.deleteAuction(auctionId);
+      // Remove from list
+      setAuctions(auctions.filter(a => a.id !== auctionId));
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to delete auction');
+    }
+  };
+
+  const handleCancelAuction = async (auctionId: number) => {
+    if (!window.confirm('Are you sure you want to cancel this auction? The item will be returned to your inventory.')) {
+      return;
+    }
+    
+    try {
+      await auctionApi.cancelAuction(auctionId);
+      setAuctions(auctions.map(a => a.id === auctionId ? { ...a, status: 'CANCELLED' } : a));
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to cancel auction');
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -118,12 +145,28 @@ const AuctionListPage: React.FC = () => {
                       </span>
                     </td>
                     <td className="p-4">
-                      <Link 
-                        to={`/auctions/${auction.id}`}
-                        className="text-indigo-400 hover:text-indigo-300 text-sm font-medium"
-                      >
-                        View
-                      </Link>
+                      <div className="flex gap-3 items-center">
+                        <Link 
+                          to={`/auctions/${auction.id}`}
+                          className="text-indigo-400 hover:text-indigo-300 text-sm font-medium"
+                        >
+                          View
+                        </Link>
+                        {['SCHEDULED', 'ACTIVE'].includes(auction.status) && (
+                          <button
+                            onClick={() => handleCancelAuction(auction.id)}
+                            className="text-orange-400 hover:text-orange-300 text-sm font-medium"
+                          >
+                            Cancel
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleDeleteAuction(auction.id)}
+                          className="text-red-500 hover:text-red-400 text-sm font-medium"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

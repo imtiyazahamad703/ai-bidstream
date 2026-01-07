@@ -4,6 +4,7 @@ import com.bidstream.dto.AuctionRequestDto;
 import com.bidstream.dto.AuctionResponseDto;
 import com.bidstream.entity.Auction;
 import com.bidstream.service.AuctionService;
+import com.bidstream.service.ItemEmbeddingService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,9 +21,20 @@ import org.springframework.web.bind.annotation.*;
 public class AuctionController {
 
     private final AuctionService auctionService;
+    private final ItemEmbeddingService itemEmbeddingService;
+    private final com.bidstream.service.ChatHistoryService chatHistoryService;
 
-    public AuctionController(AuctionService auctionService) {
+    public AuctionController(AuctionService auctionService, 
+                             ItemEmbeddingService itemEmbeddingService,
+                             com.bidstream.service.ChatHistoryService chatHistoryService) {
         this.auctionService = auctionService;
+        this.itemEmbeddingService = itemEmbeddingService;
+        this.chatHistoryService = chatHistoryService;
+    }
+
+    @GetMapping("/{id}/chat")
+    public ResponseEntity<java.util.List<com.bidstream.domain.ChatMessage>> getChatHistory(@PathVariable Long id) {
+        return ResponseEntity.ok(chatHistoryService.getHistory(id));
     }
 
     @PostMapping
@@ -46,6 +58,15 @@ public class AuctionController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String sellerEmail = authentication.getName();
         auctionService.cancelAuction(id, sellerEmail);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('SELLER')")
+    public ResponseEntity<Void> deleteAuction(@PathVariable Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String sellerEmail = authentication.getName();
+        auctionService.deleteAuction(id, sellerEmail);
         return ResponseEntity.noContent().build();
     }
 
@@ -83,5 +104,15 @@ public class AuctionController {
         dto.setCreatedAt(auction.getCreatedAt());
         // itemName populated lazily from item catalog if needed
         return dto;
+    }
+
+    /**
+     * Manually trigger item embedding for an existing auction.
+     * Useful for auctions created before auto-embed was implemented.
+     */
+    @PostMapping("/{id}/embed")
+    public ResponseEntity<?> embedAuctionItem(@PathVariable Long id) {
+        itemEmbeddingService.embedItemForAuction(id);
+        return ResponseEntity.ok(java.util.Map.of("message", "Embedding triggered for auction " + id));
     }
 }

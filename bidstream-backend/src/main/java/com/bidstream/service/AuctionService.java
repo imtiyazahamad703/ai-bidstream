@@ -19,10 +19,12 @@ public class AuctionService {
 
     private final AuctionRepository auctionRepository;
     private final ItemService itemService;
+    private final ItemEmbeddingService itemEmbeddingService;
 
-    public AuctionService(AuctionRepository auctionRepository, ItemService itemService) {
+    public AuctionService(AuctionRepository auctionRepository, ItemService itemService, ItemEmbeddingService itemEmbeddingService) {
         this.auctionRepository = auctionRepository;
         this.itemService = itemService;
+        this.itemEmbeddingService = itemEmbeddingService;
     }
 
     @Transactional
@@ -57,6 +59,14 @@ public class AuctionService {
         item.setAuctionId(savedAuction.getId());
         item.setStatus(ItemStatus.IN_AUCTION);
         itemService.updateItem(item.getId(), item, sellerEmail); // Save changes to Mongo
+        
+        // Auto-embed item description for AI Bot RAG pipeline
+        try {
+            itemEmbeddingService.embedItemForAuction(savedAuction.getId());
+        } catch (Exception e) {
+            // Don't fail auction creation if embedding fails
+            System.err.println("Warning: Auto-embedding failed for auction " + savedAuction.getId() + ": " + e.getMessage());
+        }
         
         return savedAuction;
     }
@@ -117,9 +127,9 @@ public class AuctionService {
 
         verifyAuctionOwnership(auction, sellerEmail);
 
-        if (auction.getStatus() != AuctionStatus.SCHEDULED) {
+        if (auction.getStatus() != AuctionStatus.SCHEDULED && auction.getStatus() != AuctionStatus.ACTIVE) {
             throw new IllegalStateException(
-                    "Only SCHEDULED auctions can be cancelled. Current status: " + auction.getStatus());
+                    "Only SCHEDULED or ACTIVE auctions can be cancelled. Current status: " + auction.getStatus());
         }
 
         auction.setStatus(AuctionStatus.CANCELLED);
@@ -131,6 +141,23 @@ public class AuctionService {
             item.setAuctionId(null);
             itemService.updateItem(item.getId(), item, sellerEmail);
         });
+    }
+
+    @Transactional
+    public void deleteAuction(Long auctionId, String sellerEmail) {
+        Auction auction = auctionRepository.findById(auctionId)
+                .orElseThrow(() -> new IllegalArgumentException("Auction not found: " + auctionId));
+
+        verifyAuctionOwnership(auction, sellerEmail);
+
+        // Revert item back to AVAILABLE
+        itemService.getItemById(auction.getItemId()).ifPresent(item -> {
+            item.setStatus(ItemStatus.AVAILABLE);
+            item.setAuctionId(null);
+            itemService.updateItem(item.getId(), item, sellerEmail);
+        });
+
+        auctionRepository.delete(auction);
     }
 
     /**
@@ -160,8 +187,8 @@ public class AuctionService {
         if (startTime == null) {
             throw new IllegalArgumentException("Auction start time is required");
         }
-        if (!startTime.isAfter(LocalDateTime.now().plusMinutes(5))) {
-            throw new IllegalArgumentException("Auction must start at least 5 minutes in the future");
+        if (!startTime.isAfter(LocalDateTime.now().plusMinutes(1))) {
+            throw new IllegalArgumentException("Auction must start at least 1 minute in the future");
         }
     }
 
