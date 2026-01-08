@@ -17,7 +17,7 @@ const ActiveAuctionsPage: React.FC = () => {
         const auctionsWithItems = await Promise.all(
           auctionsData.map(async (auction) => {
             try {
-              const item = await itemApi.getItemDetails(auction.itemId);
+              const item = await itemApi.getPublicItemDetails(auction.itemId);
               return { ...auction, itemDetails: item };
             } catch {
               return auction;
@@ -64,7 +64,11 @@ const ActiveAuctionsPage: React.FC = () => {
           {auctions.map((auction) => (
             <div key={auction.id} className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden flex flex-col hover:border-indigo-500 transition-colors">
               <div className="h-48 bg-slate-700 flex items-center justify-center relative">
-                <span className="text-slate-500">No Image</span>
+                {auction.itemDetails?.imageData ? (
+                  <img src={auction.itemDetails.imageData} alt={auction.itemDetails.title} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-slate-500">No Image</span>
+                )}
                 <div className="absolute top-2 right-2 bg-red-500/90 text-white text-xs font-bold px-2 py-1 rounded animate-pulse">
                   LIVE
                 </div>
@@ -96,7 +100,7 @@ const ActiveAuctionsPage: React.FC = () => {
                   to={`/auctions/${auction.id}`}
                   className="w-full text-center bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg px-4 py-2 font-medium transition-colors"
                 >
-                  Place Bid
+                  Enter Live Room
                 </Link>
               </div>
             </div>

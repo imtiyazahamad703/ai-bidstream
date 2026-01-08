@@ -31,6 +31,15 @@ public class PublicAuctionController {
         return ResponseEntity.ok(activeAuctions.map(this::mapToDto));
     }
 
+    /** Returns details of a specific auction publicly */
+    @GetMapping("/{id}")
+    public ResponseEntity<AuctionResponseDto> getPublicAuctionDetails(@PathVariable Long id) {
+        return auctionService.getAuctionById(id)
+                .map(this::mapToDto)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     /**
      * Search auctions with optional status filter and pagination.
      * GET /api/public/auctions/search?status=ACTIVE&page=0&size=10
