@@ -26,9 +26,11 @@ const BidHistory: React.FC<BidHistoryProps> = ({ bids }) => {
               } flex justify-between items-center`}
             >
               <div>
-                <span className="text-slate-300 text-sm font-medium">Bidder #{bid.bidderId}</span>
+                <span className="text-slate-300 text-sm font-medium">
+                  Bidder: {bid.bidderEmail ? bid.bidderEmail.split('@')[0] : 'Anonymous'}
+                </span>
                 <div className="text-xs text-slate-500 mt-1">
-                  {new Date(bid.timestamp).toLocaleTimeString()}
+                  {bid.createdAt ? new Date(bid.createdAt).toLocaleTimeString() : 'Just now'}
                 </div>
               </div>
               <div className={`font-bold ${index === 0 ? 'text-indigo-400' : 'text-slate-300'}`}>
