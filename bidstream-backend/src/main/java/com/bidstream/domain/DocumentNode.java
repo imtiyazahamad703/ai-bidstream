@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import java.util.List;
 import java.util.Map;
 
-@Document(collection = "document_nodes")
+@Document(collection = "document_embeddings")
 public class DocumentNode {
 
     @Id
