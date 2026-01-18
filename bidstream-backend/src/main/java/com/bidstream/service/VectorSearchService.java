@@ -42,20 +42,31 @@ public class VectorSearchService {
         int numCandidates = limit * 10;
         String indexName = "vector_index";
         
-        Query query = new Query();
+        org.bson.Document vectorSearchDoc = new org.bson.Document();
+        vectorSearchDoc.put("index", indexName);
+        vectorSearchDoc.put("path", "embedding");
+        vectorSearchDoc.put("queryVector", queryEmbedding);
+        vectorSearchDoc.put("numCandidates", numCandidates);
+        vectorSearchDoc.put("limit", limit);
+
+        org.bson.Document filter = new org.bson.Document();
         if (auctionId != null) {
-            query.addCriteria(Criteria.where("auctionId").is(auctionId));
+            filter.put("auctionId", auctionId);
         }
-        
-        // Filter by item scoped vectors
         if (itemId != null) {
-            query.addCriteria(Criteria.where("itemId").is(itemId));
+            filter.put("itemId", itemId);
         }
         
-        // This is a placeholder for actual vector distance calculation
-        // In Atlas, this would be handled server-side via Vector Search indexes
-        // Execute query and map the resulting MongoDB documents back to DocumentNode chunks
-        List<DocumentNode> rawResults = mongoTemplate.find(query, DocumentNode.class);
+        if (!filter.isEmpty()) {
+            vectorSearchDoc.put("filter", filter);
+        }
+
+        org.springframework.data.mongodb.core.aggregation.Aggregation aggregation = 
+            org.springframework.data.mongodb.core.aggregation.Aggregation.newAggregation(
+                context -> new org.bson.Document("$vectorSearch", vectorSearchDoc)
+            );
+
+        List<DocumentNode> rawResults = mongoTemplate.aggregate(aggregation, "document_embeddings", DocumentNode.class).getMappedResults();
         
         // Post-process mapping: Ensure chunks are properly populated
         return rawResults.stream()
