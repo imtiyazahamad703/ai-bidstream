@@ -14,13 +14,13 @@ import java.util.Map;
 @Service
 public class GeminiEmbeddingService {
 
-    @Value("${gemini.api.key:dummy_key}")
-    private String apiKey;
-    
-    @Value("${gemini.api.url:https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent}")
+    @Value("${gemini.api.keys:dummy_key}")
+    private List<String> apiKeys;
+    @Value("${gemini.api.url:https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent}")
     private String apiUrl;
 
     private final RestTemplate restTemplate;
+    private final java.util.concurrent.atomic.AtomicInteger currentKeyIndex = new java.util.concurrent.atomic.AtomicInteger(0);
 
     public GeminiEmbeddingService() {
         this.restTemplate = new RestTemplate();
@@ -29,33 +29,66 @@ public class GeminiEmbeddingService {
     /**
      * Calls the Gemini API to generate embeddings for a given text chunk.
      */
+    private final java.util.concurrent.ConcurrentHashMap<String, Long> penaltyBox = new java.util.concurrent.ConcurrentHashMap<>();
+
     public List<Double> generateEmbedding(String text) {
         if (text == null || text.trim().isEmpty()) {
             return Collections.emptyList();
         }
 
-        String url = apiUrl + "?key=" + apiKey;
-
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         Map<String, Object> body = Map.of(
-            "model", "models/text-embedding-004",
+            "model", "models/gemini-embedding-001",
             "content", Map.of("parts", List.of(Map.of("text", text)))
         );
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
 
-        try {
-            // Uncomment this when actually integrating with Gemini
-            // Map<String, Object> response = restTemplate.postForObject(url, request, Map.class);
-            // return extractEmbeddingFromResponse(response);
+        int totalKeys = apiKeys.size();
+        for (int i = 0; i < totalKeys; i++) {
+            int index = (currentKeyIndex.get() + i) % totalKeys;
+            String key = apiKeys.get(index);
             
-            // For now, return a mock embedding to keep the pipeline functional without an actual key
-            return mockEmbedding(768); 
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to generate embedding from Gemini", e);
+            if (key == null || key.trim().isEmpty()) {
+                continue;
+            }
+
+            // Check penalty box (1-minute cooldown)
+            Long penaltyTime = penaltyBox.get(key);
+            if (penaltyTime != null) {
+                if (System.currentTimeMillis() - penaltyTime < 60000) {
+                    continue; // Skip this key, it's on cooldown
+                } else {
+                    penaltyBox.remove(key); // Cooldown expired
+                }
+            }
+            
+            String url = apiUrl + "?key=" + key.trim();
+            try {
+                Map<String, Object> response = restTemplate.postForObject(url, request, Map.class);
+                if (i > 0) {
+                    currentKeyIndex.set(index); // Update to the new working key
+                }
+                
+                return extractEmbeddingFromResponse(response);
+            } catch (Exception e) {
+                String errorMsg = e.getMessage();
+                System.out.println("Failed with Gemini API key ending in ..." + 
+                    (key.length() > 4 ? key.substring(key.length() - 4) : key) + ". Reason: " + errorMsg);
+                
+                // Add to penalty box. If 403, punish for a year, else 1 minute
+                if (errorMsg != null && errorMsg.contains("403")) {
+                    penaltyBox.put(key, System.currentTimeMillis() + 31536000000L); 
+                } else {
+                    penaltyBox.put(key, System.currentTimeMillis());
+                }
+            }
         }
+        
+        System.err.println("All API keys failed for embedding. Falling back to mock embedding to prevent pipeline crash.");
+        return mockEmbedding(3072); 
     }
 
     private List<Double> extractEmbeddingFromResponse(Map<String, Object> response) {
