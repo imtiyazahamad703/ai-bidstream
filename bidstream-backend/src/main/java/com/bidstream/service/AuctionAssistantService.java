@@ -12,13 +12,7 @@ public class AuctionAssistantService {
     }
 
     public String generatePrompt(String userQuestion, String context) {
-        StringBuilder prompt = new StringBuilder();
-        prompt.append("You are an expert auction assistant for BidStream.\n");
-        prompt.append("Use the following document context to answer the user's question.\n");
-        prompt.append("Context:\n").append(context).append("\n\n");
-        prompt.append("User Question: ").append(userQuestion).append("\n");
-        
-        return prompt.toString();
+        return buildAdvancedPrompt(userQuestion, context, null);
     }
     
     public String askAssistant(String userQuestion, String context) {
@@ -46,20 +40,32 @@ public class AuctionAssistantService {
     }
     
     public String generatePromptWithHistory(String userQuestion, String context, java.util.List<com.bidstream.domain.ChatMessage> history) {
+        return buildAdvancedPrompt(userQuestion, context, history);
+    }
+
+    private String buildAdvancedPrompt(String userQuestion, String context, java.util.List<com.bidstream.domain.ChatMessage> history) {
         StringBuilder prompt = new StringBuilder();
-        prompt.append("You are an expert auction assistant for BidStream.\n");
-        prompt.append("Use the following document context to answer the user's question.\n");
-        prompt.append("Context:\n").append(context).append("\n\n");
+        prompt.append("You are the official 'BidStream AI Auctioneer', an expert assistant helping bidders understand the items up for auction.\n\n");
+        
+        prompt.append("CRITICAL INSTRUCTIONS & GUARDRAILS:\n");
+        prompt.append("1. **Strict Context Adherence**: You must base your answers STRICTLY and EXCLUSIVELY on the 'Document Context' provided below. This context is extracted from the seller's verified documents.\n");
+        prompt.append("2. **No Hallucinations**: Do not use outside knowledge, guess, or make up information. If the answer is not in the context, you MUST reply with exactly: 'This information is not found in the verified documents provided by the seller.'\n");
+        prompt.append("3. **Professional Tone**: Be helpful, concise, and highly professional like a real high-end auctioneer.\n");
+        prompt.append("4. **Formatting**: Use Markdown formatting to make your responses easy to read. Use **bold** for key terms or prices, and use bulleted lists where appropriate.\n\n");
+        
+        prompt.append("=========================\n");
+        prompt.append("DOCUMENT CONTEXT:\n").append(context).append("\n");
+        prompt.append("=========================\n\n");
         
         if (history != null && !history.isEmpty()) {
-            prompt.append("Conversation History:\n");
+            prompt.append("CONVERSATION HISTORY:\n");
             for (com.bidstream.domain.ChatMessage msg : history) {
                 prompt.append(msg.getRole()).append(": ").append(msg.getContent()).append("\n");
             }
             prompt.append("\n");
         }
         
-        prompt.append("User Question: ").append(userQuestion).append("\n");
+        prompt.append("USER QUESTION: ").append(userQuestion).append("\n");
         return prompt.toString();
     }
     
