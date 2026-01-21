@@ -3,6 +3,8 @@ package com.bidstream.controller;
 import com.bidstream.service.AuctionAssistantService;
 import com.bidstream.service.VectorSearchService;
 import com.bidstream.service.ChatHistoryService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -13,6 +15,8 @@ import java.util.Map;
 
 @Controller
 public class AssistantWebSocketController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AssistantWebSocketController.class);
 
     private final AuctionAssistantService auctionAssistantService;
     private final VectorSearchService vectorSearchService;
@@ -34,9 +38,13 @@ public class AssistantWebSocketController {
         String question = (String) payload.get("question");
         Long userId = payload.containsKey("userId") ? Long.valueOf(payload.get("userId").toString()) : 1L;
 
+        logger.info("Bot question received for auction {}: '{}'", auctionId, question);
+
         try {
             // Process question via RAG Pipeline
             String response = auctionAssistantService.handleConversationTurn(auctionId, userId, question, vectorSearchService, chatHistoryService);
+
+            logger.info("Bot response generated for auction {}: {} chars", auctionId, response != null ? response.length() : 0);
 
             // Publish success to topic
             messagingTemplate.convertAndSend("/topic/auction/" + auctionId + "/assistant", Map.of(
@@ -47,11 +55,12 @@ public class AssistantWebSocketController {
                     "status", "SUCCESS"
             ));
         } catch (Exception e) {
+            logger.error("Bot ERROR for auction {}: {}", auctionId, e.getMessage(), e);
             // Publish error to topic
             messagingTemplate.convertAndSend("/topic/auction/" + auctionId + "/assistant", Map.of(
                     "type", "ASSISTANT_ERROR",
                     "question", question,
-                    "error", e.getMessage(),
+                    "error", e.getMessage() != null ? e.getMessage() : "Unknown error",
                     "auctionId", auctionId,
                     "status", "FAILED"
             ));
