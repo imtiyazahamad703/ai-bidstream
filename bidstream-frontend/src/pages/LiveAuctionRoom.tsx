@@ -99,7 +99,7 @@ const LiveAuctionRoom: React.FC = () => {
           if (newBid.bidderEmail !== user?.email) {
              setNotifications(prev => [{
                id: Date.now().toString(),
-               type: 'INFO',
+               type: 'INFO' as const,
                message: `New bid of $${newBid.amount.toLocaleString()} placed`,
                timestamp: new Date().toISOString()
              }, ...prev].slice(0, 5));
@@ -108,7 +108,7 @@ const LiveAuctionRoom: React.FC = () => {
           setAuctionStatus('COMPLETED');
           setNotifications(prev => [{
             id: Date.now().toString(),
-            type: 'INFO',
+            type: 'INFO' as const,
             message: `Auction Ended! Winner: ${message.payload.winner}`,
             timestamp: new Date().toISOString()
           }, ...prev].slice(0, 5));
@@ -125,7 +125,7 @@ const LiveAuctionRoom: React.FC = () => {
         setNotifications(prev => [{
           id: Date.now().toString(),
           message: message.message || message.content,
-          type: message.type || 'INFO',
+          type: (message.type as NotificationType) || 'INFO',
           timestamp: new Date().toISOString()
         }, ...prev].slice(0, 5));
       });
@@ -146,7 +146,7 @@ const LiveAuctionRoom: React.FC = () => {
 
   const currentBid = bids.length > 0 ? bids[0].amount : (auction?.currentBid || auction?.startingPrice || 0);
   const isWinning = bids.length > 0 && bids[0].bidderEmail === user?.email;
-  const isSeller = user?.email === auction?.sellerEmail;
+  const isSeller = user?.email === item?.sellerEmail;
 
   return (
     <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 py-6 min-h-[calc(100vh-6rem)]">

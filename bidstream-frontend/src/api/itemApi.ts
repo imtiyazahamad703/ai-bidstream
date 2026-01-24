@@ -13,6 +13,7 @@ export interface Item {
   imageData?: string;
   // Convenience getter for UI that uses "title"
   title?: string;
+  condition?: string;
 }
 
 export interface CreateItemData {

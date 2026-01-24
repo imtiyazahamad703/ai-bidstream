@@ -77,6 +77,8 @@ export interface ChatMessage {
   id: string;
   sender: 'USER' | 'AI';
   senderName?: string;
+  userEmail?: string;
+  userId?: number | string;
   text: string;
   timestamp: string; // ISO 8601 Date
   sourceDocuments?: string[];

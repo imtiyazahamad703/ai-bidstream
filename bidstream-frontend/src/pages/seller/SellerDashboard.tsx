@@ -19,7 +19,7 @@ const SellerDashboard: React.FC = () => {
         
         setStats({
           items: items.length,
-          activeAuctions: auctions.filter(a => a.status === 'ACTIVE' || a.status === 'SCHEDULED').length,
+          activeAuctions: auctions.filter(a => a.status === 'ACTIVE' || a.status === 'PENDING').length,
           completedAuctions: auctions.filter(a => a.status === 'COMPLETED').length
         });
       } catch (err) {

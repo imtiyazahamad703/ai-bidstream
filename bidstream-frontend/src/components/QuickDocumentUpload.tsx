@@ -4,7 +4,7 @@ import { axiosClient } from '../api/axiosClient';
 import { Upload, FileText, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface QuickDocumentUploadProps {
-  itemId: number;
+  itemId: string;
   auctionId: number;
 }
 
