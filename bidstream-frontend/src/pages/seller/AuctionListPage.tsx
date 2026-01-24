@@ -157,7 +157,7 @@ const AuctionListPage: React.FC = () => {
                       <div className="flex items-center justify-between">
                         <span className="text-slate-500 uppercase tracking-wider font-bold">Start Time</span>
                         <span className="text-slate-300 font-medium">
-                          {new Date(auction.startTime).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                          {new Date(auction.startTime.endsWith('Z') ? auction.startTime : auction.startTime + 'Z').toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">

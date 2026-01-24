@@ -72,12 +72,10 @@ const AuctionCreatePage: React.FC = () => {
     setLoading(true);
 
     try {
-      // Send datetime strings natively without toISOString() to avoid timezone mismatch
-      // with Spring Boot's LocalDateTime which expects exact local representations.
       const payload: CreateAuctionData = {
         itemId: formData.itemId,
-        startTime: formData.startTime,
-        endTime: formData.endTime
+        startTime: start.toISOString().slice(0, 19),
+        endTime: end.toISOString().slice(0, 19)
       };
       
       await auctionApi.createAuction(payload);

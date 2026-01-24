@@ -156,7 +156,7 @@ const ActiveAuctionsPage: React.FC = () => {
                       <div className="text-right">
                         <span className="text-[11px] uppercase text-slate-500 block">Ends In:</span>
                         <span className="text-sm text-slate-300 font-medium">
-                          {new Date(auction.endTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                          {new Date(auction.endTime.endsWith('Z') ? auction.endTime : auction.endTime + 'Z').toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                         </span>
                       </div>
                     </div>
