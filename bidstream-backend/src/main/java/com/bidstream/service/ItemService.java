@@ -6,6 +6,7 @@ package com.bidstream.service;
  * Serves as the foundation for Phase 4 Auction Management.
  */
 import com.bidstream.entity.Item;
+import com.bidstream.entity.ItemStatus;
 import com.bidstream.repository.mongo.ItemRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -99,6 +100,15 @@ public class ItemService {
         if (item.getSellerEmail() == null || !item.getSellerEmail().equals(sellerEmail)) {
             throw new org.springframework.security.access.AccessDeniedException("You do not own this item");
         }
+    }
+
+    public void unlinkItemFromAuction(String id, String sellerEmail) {
+        itemRepository.findById(id).ifPresent(item -> {
+            verifyItemOwnership(item, sellerEmail);
+            item.setStatus(ItemStatus.AVAILABLE);
+            item.setAuctionId(null);
+            itemRepository.save(item);
+        });
     }
 
     public Item saveItem(Item item) {

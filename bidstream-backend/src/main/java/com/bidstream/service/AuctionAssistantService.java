@@ -6,9 +6,11 @@ import org.springframework.stereotype.Service;
 public class AuctionAssistantService {
 
     private final GeminiChatService geminiChatService;
+    private final GroqChatService groqChatService;
 
-    public AuctionAssistantService(GeminiChatService geminiChatService) {
+    public AuctionAssistantService(GeminiChatService geminiChatService, GroqChatService groqChatService) {
         this.geminiChatService = geminiChatService;
+        this.groqChatService = groqChatService;
     }
 
     public String generatePrompt(String userQuestion, String context) {
@@ -17,7 +19,12 @@ public class AuctionAssistantService {
     
     public String askAssistant(String userQuestion, String context) {
         String prompt = generatePrompt(userQuestion, context);
-        return geminiChatService.generateChatResponse(prompt);
+        try {
+            return geminiChatService.generateChatResponse(prompt);
+        } catch (Exception e) {
+            System.out.println("Gemini failed, falling back to Groq: " + e.getMessage());
+            return groqChatService.generateChatResponse(prompt);
+        }
     }
     
     /**
@@ -87,13 +94,13 @@ public class AuctionAssistantService {
     /**
      * Completes a conversation turn by pulling history, answering, and saving the interaction.
      */
-    @org.springframework.cache.annotation.Cacheable(value = "ai_responses", key = "#auctionId + '_' + #question")
-    public String handleConversationTurn(Long auctionId, Long userId, String question, 
+    @org.springframework.cache.annotation.Cacheable(value = "ai_responses", key = "#auctionId + '_' + #userId + '_' + #question")
+    public String handleConversationTurn(Long auctionId, Long userId, String userEmail, String question, 
                                          VectorSearchService vectorSearchService, 
                                          ChatHistoryService chatHistoryService) {
         
         // 1. Retrieve history
-        java.util.List<com.bidstream.domain.ChatMessage> history = chatHistoryService.getHistory(auctionId);
+        java.util.List<com.bidstream.domain.ChatMessage> history = chatHistoryService.getHistory(auctionId, userId);
         
         // 2. Retrieve document context
         String context = vectorSearchService.retrieveContext(auctionId, question, 3);
@@ -104,11 +111,17 @@ public class AuctionAssistantService {
         // Cache miss indicator log
         System.out.println("Cache miss for auctionId: " + auctionId + ", question: " + question);
         
-        String response = geminiChatService.generateChatResponse(prompt);
+        String response;
+        try {
+            response = geminiChatService.generateChatResponse(prompt);
+        } catch (Exception e) {
+            System.out.println("Gemini failed during conversation turn, falling back to Groq: " + e.getMessage());
+            response = groqChatService.generateChatResponse(prompt);
+        }
         
         // 4. Save both user message and AI response
-        chatHistoryService.saveMessage(auctionId, userId, "USER", question);
-        chatHistoryService.saveMessage(auctionId, userId, "ASSISTANT", response);
+        chatHistoryService.saveMessage(auctionId, userId, userEmail, "USER", question);
+        chatHistoryService.saveMessage(auctionId, userId, userEmail, "ASSISTANT", response);
         
         return response;
     }

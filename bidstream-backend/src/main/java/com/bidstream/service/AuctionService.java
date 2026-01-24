@@ -5,6 +5,9 @@ import com.bidstream.entity.AuctionStatus;
 import com.bidstream.entity.Item;
 import com.bidstream.entity.ItemStatus;
 import com.bidstream.repository.jpa.AuctionRepository;
+import com.bidstream.repository.jpa.BidRepository;
+import com.bidstream.repository.mongo.ChatMessageRepository;
+import com.bidstream.repository.mongo.DocumentNodeRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -20,11 +23,17 @@ public class AuctionService {
     private final AuctionRepository auctionRepository;
     private final ItemService itemService;
     private final ItemEmbeddingService itemEmbeddingService;
+    private final BidRepository bidRepository;
+    private final ChatMessageRepository chatMessageRepository;
+    private final DocumentNodeRepository documentNodeRepository;
 
-    public AuctionService(AuctionRepository auctionRepository, ItemService itemService, ItemEmbeddingService itemEmbeddingService) {
+    public AuctionService(AuctionRepository auctionRepository, ItemService itemService, ItemEmbeddingService itemEmbeddingService, BidRepository bidRepository, ChatMessageRepository chatMessageRepository, DocumentNodeRepository documentNodeRepository) {
         this.auctionRepository = auctionRepository;
         this.itemService = itemService;
         this.itemEmbeddingService = itemEmbeddingService;
+        this.bidRepository = bidRepository;
+        this.chatMessageRepository = chatMessageRepository;
+        this.documentNodeRepository = documentNodeRepository;
     }
 
     @Transactional
@@ -45,7 +54,7 @@ public class AuctionService {
             throw new IllegalStateException("Item is already linked to an auction");
         }
         
-        if (item.getStatus() != ItemStatus.AVAILABLE) {
+        if (item.getStatus() != ItemStatus.AVAILABLE && item.getStatus() != ItemStatus.SOLD) {
             throw new IllegalStateException("Item is not available for auction");
         }
         
@@ -84,11 +93,10 @@ public class AuctionService {
         if (newStatus == AuctionStatus.COMPLETED || newStatus == AuctionStatus.CANCELLED) {
             Item item = itemService.getItemById(auction.getItemId()).orElse(null);
             if (item != null) {
+                // If cancelled, it becomes AVAILABLE again. If completed, it becomes SOLD.
                 item.setStatus(newStatus == AuctionStatus.COMPLETED ? ItemStatus.SOLD : ItemStatus.AVAILABLE);
-                if (newStatus == AuctionStatus.CANCELLED) {
-                    item.setAuctionId(null);
-                }
-                itemService.updateItem(item.getId(), item, item.getSellerEmail());
+                item.setAuctionId(null);
+                itemService.saveItem(item); // bypass updateItem to properly save null auctionId
             }
         }
         
@@ -136,11 +144,7 @@ public class AuctionService {
         auctionRepository.save(auction);
 
         // Revert item back to AVAILABLE
-        itemService.getItemById(auction.getItemId()).ifPresent(item -> {
-            item.setStatus(ItemStatus.AVAILABLE);
-            item.setAuctionId(null);
-            itemService.updateItem(item.getId(), item, sellerEmail);
-        });
+        itemService.unlinkItemFromAuction(auction.getItemId(), sellerEmail);
     }
 
     @Transactional
@@ -151,11 +155,12 @@ public class AuctionService {
         verifyAuctionOwnership(auction, sellerEmail);
 
         // Revert item back to AVAILABLE
-        itemService.getItemById(auction.getItemId()).ifPresent(item -> {
-            item.setStatus(ItemStatus.AVAILABLE);
-            item.setAuctionId(null);
-            itemService.updateItem(item.getId(), item, sellerEmail);
-        });
+        itemService.unlinkItemFromAuction(auction.getItemId(), sellerEmail);
+
+        // Hard delete all associated data
+        bidRepository.deleteByAuctionId(auction.getId());
+        chatMessageRepository.deleteByAuctionId(auction.getId());
+        documentNodeRepository.deleteByAuctionId(auction.getId());
 
         auctionRepository.delete(auction);
     }

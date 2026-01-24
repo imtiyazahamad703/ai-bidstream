@@ -33,8 +33,22 @@ public class AuctionController {
     }
 
     @GetMapping("/{id}/chat")
-    public ResponseEntity<java.util.List<com.bidstream.domain.ChatMessage>> getChatHistory(@PathVariable Long id) {
-        return ResponseEntity.ok(chatHistoryService.getHistory(id));
+    public ResponseEntity<java.util.List<com.bidstream.domain.ChatMessage>> getChatHistory(
+            @PathVariable Long id,
+            @RequestParam(required = false, defaultValue = "101") Long userId) {
+        return ResponseEntity.ok(chatHistoryService.getHistory(id, userId));
+    }
+
+    @GetMapping("/{id}/chat/all")
+    @PreAuthorize("hasRole('SELLER')")
+    public ResponseEntity<java.util.List<com.bidstream.domain.ChatMessage>> getAllChatHistory(@PathVariable Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String sellerEmail = authentication.getName();
+        
+        return auctionService.getAuctionById(id)
+                .filter(auction -> auction.getSellerEmail().equals(sellerEmail))
+                .map(auction -> ResponseEntity.ok(chatHistoryService.getAllHistory(id)))
+                .orElse(ResponseEntity.status(403).build());
     }
 
     @PostMapping

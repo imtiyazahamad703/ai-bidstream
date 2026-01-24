@@ -12,6 +12,7 @@ public class ChatMessage {
 
     private Long auctionId;
     private Long userId; // The user asking the question
+    private String userEmail; // The user's email
     private String role; // "USER" or "ASSISTANT"
     private String content;
     private Instant timestamp;
@@ -19,9 +20,10 @@ public class ChatMessage {
     public ChatMessage() {
     }
 
-    public ChatMessage(Long auctionId, Long userId, String role, String content) {
+    public ChatMessage(Long auctionId, Long userId, String userEmail, String role, String content) {
         this.auctionId = auctionId;
         this.userId = userId;
+        this.userEmail = userEmail;
         this.role = role;
         this.content = content;
         this.timestamp = Instant.now();
@@ -50,6 +52,14 @@ public class ChatMessage {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public String getUserEmail() {
+        return userEmail;
+    }
+
+    public void setUserEmail(String userEmail) {
+        this.userEmail = userEmail;
     }
 
     public String getRole() {

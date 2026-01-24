@@ -18,4 +18,6 @@ public interface BidRepository extends JpaRepository<Bid, Long> {
     Page<Bid> findByBidderEmail(String bidderEmail, Pageable pageable);
     
     Bid findTopByAuctionIdOrderByAmountDesc(Long auctionId);
+    
+    void deleteByAuctionId(Long auctionId);
 }

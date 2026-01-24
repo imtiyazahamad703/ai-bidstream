@@ -12,6 +12,9 @@ public interface DocumentNodeRepository extends MongoRepository<DocumentNode, St
     // Finds all chunks associated with a specific auction
     List<DocumentNode> findByAuctionId(Long auctionId);
     
+    // Deletes all chunks associated with a specific auction
+    void deleteByAuctionId(Long auctionId);
+    
     // Custom query methods for embedding operations can be added here
     <S extends DocumentNode> List<S> saveAll(Iterable<S> entities);
 }

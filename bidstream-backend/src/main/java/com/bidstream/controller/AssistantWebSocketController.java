@@ -37,18 +37,30 @@ public class AssistantWebSocketController {
     public void handleAuctionQuestion(@DestinationVariable Long auctionId, @Payload Map<String, Object> payload) {
         String question = (String) payload.get("question");
         Long userId = payload.containsKey("userId") ? Long.valueOf(payload.get("userId").toString()) : 1L;
+        String userEmail = payload.containsKey("userEmail") ? payload.get("userEmail").toString() : null;
 
         logger.info("Bot question received for auction {}: '{}'", auctionId, question);
 
         try {
             // Process question via RAG Pipeline
-            String response = auctionAssistantService.handleConversationTurn(auctionId, userId, question, vectorSearchService, chatHistoryService);
+            String response = auctionAssistantService.handleConversationTurn(auctionId, userId, userEmail, question, vectorSearchService, chatHistoryService);
 
             logger.info("Bot response generated for auction {}: {} chars", auctionId, response != null ? response.length() : 0);
 
-            // Publish success to topic
-            messagingTemplate.convertAndSend("/topic/auction/" + auctionId + "/assistant", Map.of(
+            // Publish success to user-specific topic
+            messagingTemplate.convertAndSend("/topic/auction/" + auctionId + "/assistant/" + userId, Map.of(
                     "type", "ASSISTANT_RESPONSE",
+                    "question", question,
+                    "response", response,
+                    "auctionId", auctionId,
+                    "status", "SUCCESS"
+            ));
+            
+            // Publish to seller monitoring topic
+            messagingTemplate.convertAndSend("/topic/auction/" + auctionId + "/assistant/monitor", Map.of(
+                    "type", "ASSISTANT_RESPONSE",
+                    "userId", userId,
+                    "userEmail", userEmail != null ? userEmail : "",
                     "question", question,
                     "response", response,
                     "auctionId", auctionId,
@@ -56,9 +68,20 @@ public class AssistantWebSocketController {
             ));
         } catch (Exception e) {
             logger.error("Bot ERROR for auction {}: {}", auctionId, e.getMessage(), e);
-            // Publish error to topic
-            messagingTemplate.convertAndSend("/topic/auction/" + auctionId + "/assistant", Map.of(
+            // Publish error to user-specific topic
+            messagingTemplate.convertAndSend("/topic/auction/" + auctionId + "/assistant/" + userId, Map.of(
                     "type", "ASSISTANT_ERROR",
+                    "question", question,
+                    "error", e.getMessage() != null ? e.getMessage() : "Unknown error",
+                    "auctionId", auctionId,
+                    "status", "FAILED"
+            ));
+            
+            // Publish error to seller monitoring topic
+            messagingTemplate.convertAndSend("/topic/auction/" + auctionId + "/assistant/monitor", Map.of(
+                    "type", "ASSISTANT_ERROR",
+                    "userId", userId,
+                    "userEmail", userEmail != null ? userEmail : "",
                     "question", question,
                     "error", e.getMessage() != null ? e.getMessage() : "Unknown error",
                     "auctionId", auctionId,

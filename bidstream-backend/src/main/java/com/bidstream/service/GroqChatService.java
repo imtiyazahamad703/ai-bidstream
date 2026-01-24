@@ -11,35 +11,34 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class GeminiChatService {
+public class GroqChatService {
 
-    @Value("${gemini.api.keys:dummy_key}")
+    @Value("${groq.api.keys:}")
     private List<String> apiKeys;
-    @Value("${gemini.api.chat.url:https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent}")
+    
+    @Value("${groq.api.chat.url:https://api.groq.com/openai/v1/chat/completions}")
     private String apiUrl;
 
     private final RestTemplate restTemplate;
     private final java.util.concurrent.atomic.AtomicInteger currentKeyIndex = new java.util.concurrent.atomic.AtomicInteger(0);
     private final java.util.concurrent.ConcurrentHashMap<String, Long> penaltyBox = new java.util.concurrent.ConcurrentHashMap<>();
 
-    public GeminiChatService() {
+    public GroqChatService() {
         this.restTemplate = new RestTemplate();
     }
 
     public String generateChatResponse(String prompt) {
-        if (apiKeys.isEmpty()) {
-            throw new RuntimeException("No API keys configured.");
+        if (apiKeys == null || apiKeys.isEmpty()) {
+            throw new RuntimeException("No Groq API keys configured.");
         }
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
         Map<String, Object> body = Map.of(
-            "contents", List.of(Map.of(
-                "parts", List.of(Map.of("text", prompt))
+            "model", "llama3-8b-8192",
+            "messages", List.of(Map.of(
+                "role", "user",
+                "content", prompt
             ))
         );
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
 
         int totalKeys = apiKeys.size();
         for (int i = 0; i < totalKeys; i++) {
@@ -60,19 +59,24 @@ public class GeminiChatService {
                 }
             }
             
-            String url = apiUrl + "?key=" + key.trim();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(key.trim());
+            
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+
             try {
-                Map<String, Object> response = restTemplate.postForObject(url, request, Map.class);
+                Map<String, Object> response = restTemplate.postForObject(apiUrl, request, Map.class);
                 if (i > 0) {
                     currentKeyIndex.set(index); // Update to the new working key
                 }
                 return extractTextFromResponse(response);
             } catch (Exception e) {
                 String errorMsg = e.getMessage();
-                System.out.println("Failed with Gemini API key: " + key + ". Reason: " + errorMsg);
+                System.out.println("Failed with Groq API key: " + key + ". Reason: " + errorMsg);
                 
-                // Add to penalty box. If 403, punish for a year, else 1 minute
-                if (errorMsg != null && errorMsg.contains("403")) {
+                // Add to penalty box. If 403 or 401, punish for a year, else 1 minute
+                if (errorMsg != null && (errorMsg.contains("403") || errorMsg.contains("401"))) {
                     penaltyBox.put(key, System.currentTimeMillis() + 31536000000L); 
                 } else {
                     penaltyBox.put(key, System.currentTimeMillis());
@@ -80,25 +84,22 @@ public class GeminiChatService {
             }
         }
         
-        throw new RuntimeException("All Gemini API keys failed or were rate limited.");
+        throw new RuntimeException("All Groq API keys failed or were rate limited.");
     }
     
     @SuppressWarnings("unchecked")
     private String extractTextFromResponse(Map<String, Object> response) {
         try {
-            List<Map<String, Object>> candidates = (List<Map<String, Object>>) response.get("candidates");
-            if (candidates != null && !candidates.isEmpty()) {
-                Map<String, Object> content = (Map<String, Object>) candidates.get(0).get("content");
-                if (content != null) {
-                    List<Map<String, Object>> parts = (List<Map<String, Object>>) content.get("parts");
-                    if (parts != null && !parts.isEmpty()) {
-                        return (String) parts.get(0).get("text");
-                    }
+            List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
+            if (choices != null && !choices.isEmpty()) {
+                Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+                if (message != null) {
+                    return (String) message.get("content");
                 }
             }
             return "Sorry, I couldn't understand the response from the AI model.";
         } catch (Exception e) {
-            System.err.println("Error parsing Gemini response: " + e.getMessage());
+            System.err.println("Error parsing Groq response: " + e.getMessage());
             return "Sorry, an error occurred while parsing the AI response.";
         }
     }
