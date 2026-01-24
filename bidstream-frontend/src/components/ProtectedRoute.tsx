@@ -13,8 +13,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles 
   const location = useLocation();
 
   if (!isAuthenticated || !user) {
-    // Redirect them to the landing page
-    return <Navigate to="/" state={{ from: location }} replace />;
+    // Redirect them to the login page
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {

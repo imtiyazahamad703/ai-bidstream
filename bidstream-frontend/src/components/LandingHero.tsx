@@ -60,7 +60,11 @@ export const LandingHero: React.FC = () => {
   }));
 
   const handleExploreLiveAuctions = () => {
-    navigate('/auctions');
+    if (!isAuthenticated) {
+      navigate('/login');
+    } else {
+      navigate('/auctions');
+    }
   };
 
   const handleSignIn = () => {
@@ -173,6 +177,10 @@ export const LandingHero: React.FC = () => {
 
                 <button
                   onClick={() => {
+                    if (!isAuthenticated) {
+                      navigate('/login');
+                      return;
+                    }
                     if (actualAuctions.length > 0) {
                       navigate(`/auctions/${displayAuctions[currentSlide].id}`);
                     } else {
