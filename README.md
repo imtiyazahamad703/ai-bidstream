@@ -1,8 +1,8 @@
 <div align="center">
-  <img src=".github/images/Bidding_LandingPage.png" alt="BidStream Banner" width="100%"/>
-
   <h1>⚖️ AI BidStream</h1>
   <p><strong>Institutional-Grade Live Auction Platform Verified by AI Provenance</strong></p>
+
+  <img src=".github/images/Bidding_LandingPage.png" alt="BidStream Banner" width="100%"/>
 </div>
 
 ---
