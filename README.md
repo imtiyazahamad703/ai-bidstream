@@ -75,6 +75,19 @@ This project is built using a highly scalable, event-driven microservices archit
 ## 🏗️ Getting Started
 
 ### Prerequisites
-- Node.js (v18+)
-- Java 17
-- MySQL, MongoDB, Redis, Kafka
+- **Node.js** (v18+)
+- **Java 17**
+- **Docker & Docker Compose** (Highly Recommended for local infrastructure)
+
+### 🐳 Docker Support (Zero-Config Setup)
+The project includes a comprehensive `docker-compose.yml` file to instantly spin up the entire infrastructure locally without manual installation:
+- **MySQL** (Relational Database)
+- **MongoDB** (Catalog & Vector Storage)
+- **Redis** (Distributed Locking & Bid Cache)
+- **Apache Kafka** (Event Message Broker)
+
+To start the infrastructure, simply run:
+```bash
+docker-compose up -d
+```
+For production deployment, a robust `Dockerfile` is provided in the backend directory for seamless containerization and automated deployments to platforms like Render, AWS, or DigitalOcean.
