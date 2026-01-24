@@ -44,9 +44,6 @@ const LiveAuctionRoom: React.FC = () => {
       if (!id) return;
       try {
         const auctionData = await auctionApi.getAuctionDetails(Number(id));
-        setAuction(auctionData as Auction);
-        setAuctionStatus(auctionData.status as any);
-        
         if (auctionData.itemId) {
           try {
             const itemData = await itemApi.getPublicItemDetails(auctionData.itemId);
@@ -55,6 +52,10 @@ const LiveAuctionRoom: React.FC = () => {
             console.warn(`Item ${auctionData.itemId} not found in database.`);
           }
         }
+        
+        // Set auction state AFTER fetching item to prevent UI flicker
+        setAuction(auctionData as Auction);
+        setAuctionStatus(auctionData.status as any);
         
         // Load initial bid history
         try {
