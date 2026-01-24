@@ -32,7 +32,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.removeItem('auth_token');
     set({ user: null, isAuthenticated: false, isLoading: false });
   },
-  checkSession: () => {
+  checkSession: async () => {
     const token = localStorage.getItem('auth_token');
     if (!token) {
       set({ user: null, isAuthenticated: false, isLoading: false });
@@ -48,14 +48,15 @@ export const useAuthStore = create<AuthState>((set) => ({
         localStorage.removeItem('auth_token');
         set({ user: null, isAuthenticated: false, isLoading: false });
       } else {
-        // We might not have the full user object, but we have enough for session management
-        // Usually, you'd fetch the full profile from the backend here
-        const user: User = {
-          id: decoded.userId || 0,
-          email: decoded.sub,
-          role: decoded.role as any || 'BIDDER'
-        };
-        set({ user, isAuthenticated: true, isLoading: false });
+        // Token valid, fetch real user details
+        const { authApi } = await import('../api/authApi');
+        try {
+          const user = await authApi.getUserProfile();
+          set({ user, isAuthenticated: true, isLoading: false });
+        } catch (err) {
+          localStorage.removeItem('auth_token');
+          set({ user: null, isAuthenticated: false, isLoading: false });
+        }
       }
     } catch (error) {
       localStorage.removeItem('auth_token');

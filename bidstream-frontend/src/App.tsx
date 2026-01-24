@@ -16,6 +16,9 @@ import AuctionCreatePage from './pages/seller/AuctionCreatePage';
 import AuctionListPage from './pages/seller/AuctionListPage';
 import ActiveAuctionsPage from './pages/ActiveAuctionsPage';
 import LiveAuctionRoom from './pages/LiveAuctionRoom';
+import AboutPage from './pages/AboutPage';
+import ContactPage from './pages/ContactPage';
+import TermsPrivacyPage from './pages/TermsPrivacyPage';
 import { wsService } from './api/stompClient';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -52,6 +55,11 @@ const App: React.FC = () => {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/terms" element={<TermsPrivacyPage type="terms" />} />
+            <Route path="/privacy" element={<TermsPrivacyPage type="privacy" />} />
+            <Route path="/how-it-works" element={<TermsPrivacyPage type="how-it-works" />} />
             
             {/* Protected Routes (Placeholders for now) */}
             <Route 

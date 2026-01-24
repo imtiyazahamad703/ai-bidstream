@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { itemApi, CreateItemData } from '../../api/itemApi';
+import { Upload, X, FileText, Image as ImageIcon, ChevronLeft, Loader2, Info } from 'lucide-react';
+import { motion } from 'motion/react';
 
 const ALLOWED_DOC_TYPES = [
   'application/pdf',
@@ -39,13 +41,10 @@ const ItemCreatePage: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file size (max 2MB for MongoDB storage)
     if (file.size > 2 * 1024 * 1024) {
       setError('Image must be less than 2MB');
       return;
     }
-
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       setError('Only image files are allowed');
       return;
@@ -56,6 +55,7 @@ const ItemCreatePage: React.FC = () => {
       const base64 = reader.result as string;
       setImagePreview(base64);
       setFormData({ ...formData, imageData: base64 });
+      setError(null);
     };
     reader.readAsDataURL(file);
   };
@@ -63,9 +63,7 @@ const ItemCreatePage: React.FC = () => {
   const removeImage = () => {
     setImagePreview(null);
     setFormData({ ...formData, imageData: undefined });
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,12 +92,6 @@ const ItemCreatePage: React.FC = () => {
     setDocuments(prev => prev.filter((_, i) => i !== index));
   };
 
-  const getFileIcon = (fileName: string) => {
-    if (fileName.endsWith('.pdf')) return '📄';
-    if (fileName.endsWith('.doc') || fileName.endsWith('.docx')) return '📝';
-    return '📎';
-  };
-
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
@@ -113,11 +105,9 @@ const ItemCreatePage: React.FC = () => {
     setUploadProgress(null);
 
     try {
-      // Step 1: Create the item
       setUploadProgress('Creating item...');
       const createdItem = await itemApi.createItem(formData);
       
-      // Step 2: Upload documents if any
       if (documents.length > 0) {
         setUploadProgress(`Uploading ${documents.length} document(s)...`);
         try {
@@ -125,7 +115,7 @@ const ItemCreatePage: React.FC = () => {
           setUploadProgress('Documents processed successfully!');
         } catch (docErr: any) {
           console.error('Document upload failed:', docErr);
-          setError(`Item created but document upload failed: ${docErr.response?.data?.error || docErr.message}. You can upload them later.`);
+          setError(`Item created but document upload failed: ${docErr.response?.data?.error || docErr.message}.`);
         }
       }
       
@@ -139,208 +129,229 @@ const ItemCreatePage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <div className="flex items-center space-x-4 mb-8">
-        <Link to="/seller/items" className="text-slate-400 hover:text-white">
-          ← Back to Items
+    <div className="max-w-4xl mx-auto space-y-6">
+      
+      <div className="flex items-center gap-4 pb-4 border-b border-slate-800">
+        <Link to="/seller/items" className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400 hover:text-white transition-colors">
+          <ChevronLeft className="w-5 h-5" />
         </Link>
-        <h1 className="text-3xl font-bold text-white">Create New Item</h1>
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Register New Lot</h1>
+          <p className="text-sm text-slate-400 mt-1">Add items to your inventory to be scheduled for live rings.</p>
+        </div>
       </div>
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-4 rounded-lg text-sm">
-          {error}
-        </div>
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-rose-500/10 border border-rose-500/30 text-rose-400 p-4 rounded-xl text-sm flex items-start gap-3">
+          <span className="mt-0.5">⚠️</span>
+          <span>{error}</span>
+        </motion.div>
       )}
 
       {uploadProgress && (
-        <div className="bg-indigo-500/10 border border-indigo-500/50 text-indigo-400 p-4 rounded-lg text-sm flex items-center gap-3">
-          <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
-          {uploadProgress}
-        </div>
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 p-4 rounded-xl text-sm flex items-center gap-3">
+          <Loader2 className="w-5 h-5 animate-spin" />
+          <span>{uploadProgress}</span>
+        </motion.div>
       )}
 
-      <div className="bg-slate-800 rounded-xl border border-slate-700 shadow-md p-6 md:p-8">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Image Upload */}
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Item Image</label>
-            <div className="flex items-start gap-6">
+      <form onSubmit={handleSubmit} className="space-y-8">
+        
+        {/* Main Details Card */}
+        <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-xl p-6 sm:p-8 space-y-6">
+          <h2 className="text-lg font-bold text-white mb-4 border-b border-slate-800/60 pb-2">Lot Details</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+            
+            {/* Image Upload Area */}
+            <div className="md:col-span-4 space-y-2">
+              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">Primary Hero Image</label>
+              
               <div 
-                className="w-48 h-48 rounded-xl border-2 border-dashed border-slate-600 flex items-center justify-center overflow-hidden cursor-pointer hover:border-indigo-500 transition-colors bg-slate-900"
                 onClick={() => fileInputRef.current?.click()}
+                className={`relative group aspect-square rounded-2xl border-2 border-dashed flex flex-col items-center justify-center overflow-hidden cursor-pointer transition-all ${
+                  imagePreview 
+                    ? 'border-indigo-500/50 hover:border-indigo-500' 
+                    : 'border-slate-700 bg-slate-950 hover:border-indigo-500 hover:bg-slate-900/50'
+                }`}
               >
                 {imagePreview ? (
-                  <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                  <>
+                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <span className="px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-bold shadow-lg">Change Image</span>
+                    </div>
+                  </>
                 ) : (
-                  <div className="text-center p-4">
-                    <svg className="mx-auto h-10 w-10 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <p className="mt-2 text-xs text-slate-500">Click to upload</p>
-                    <p className="text-xs text-slate-600">Max 2MB</p>
+                  <div className="text-center p-6 space-y-3">
+                    <div className="w-12 h-12 mx-auto rounded-full bg-slate-800 flex items-center justify-center text-slate-500 group-hover:text-indigo-400 group-hover:bg-indigo-500/10 transition-colors">
+                      <ImageIcon className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-slate-300 group-hover:text-indigo-300 transition-colors">Upload Image</p>
+                      <p className="text-xs text-slate-500 font-mono mt-1">JPEG/PNG max 2MB</p>
+                    </div>
                   </div>
                 )}
               </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="hidden"
-              />
+              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+              
               {imagePreview && (
                 <button
                   type="button"
                   onClick={removeImage}
-                  className="mt-2 text-sm text-red-400 hover:text-red-300 transition-colors"
+                  className="w-full py-2 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 text-xs font-bold transition-colors"
                 >
                   Remove Image
                 </button>
               )}
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Item Title</label>
-            <input
-              type="text"
-              name="title"
-              required
-              value={formData.title}
-              onChange={handleChange}
-              className="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-              placeholder="e.g., Vintage Rolex Submariner"
-            />
-          </div>
+            {/* Title & Desc Area */}
+            <div className="md:col-span-8 space-y-5">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">Title / Name</label>
+                <input
+                  type="text"
+                  name="title"
+                  required
+                  value={formData.title}
+                  onChange={handleChange}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                  placeholder="e.g. 1969 Omega Speedmaster Apollo 11"
+                />
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Description</label>
-            <textarea
-              name="description"
-              required
-              value={formData.description}
-              onChange={handleChange}
-              rows={5}
-              className="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-              placeholder="Describe your item in detail..."
-            />
-          </div>
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">Description</label>
+                <textarea
+                  name="description"
+                  required
+                  value={formData.description}
+                  onChange={handleChange}
+                  rows={5}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors custom-scrollbar"
+                  placeholder="Provide detailed information about the item..."
+                />
+              </div>
 
-          {/* Document Upload Section */}
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
-              Supporting Documents
-              <span className="text-slate-500 font-normal ml-2">(Optional — PDF, DOC, DOCX)</span>
-            </label>
-            <p className="text-xs text-slate-500 mb-3">
-              Upload certificates, provenance records, or any documents that describe your item. The AI Bot will use these to answer buyer questions.
-            </p>
-            
-            <div 
-              className="border-2 border-dashed border-slate-600 rounded-xl p-6 text-center cursor-pointer hover:border-emerald-500/60 transition-colors bg-slate-900/50"
-              onClick={() => docInputRef.current?.click()}
-            >
-              <svg className="mx-auto h-10 w-10 text-emerald-500/60 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <p className="text-sm text-slate-400">Click to select documents</p>
-              <p className="text-xs text-slate-600 mt-1">PDF, DOC, DOCX — Max 10MB each</p>
-            </div>
-            <input
-              ref={docInputRef}
-              type="file"
-              accept=".pdf,.doc,.docx"
-              multiple
-              onChange={handleDocumentChange}
-              className="hidden"
-            />
+              <div className="grid grid-cols-2 gap-5">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">Starting Reserve ($)</label>
+                  <input
+                    type="number"
+                    name="startingPrice"
+                    required
+                    min="0"
+                    step="0.01"
+                    value={formData.startingPrice}
+                    onChange={handleChange}
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors font-mono"
+                  />
+                </div>
 
-            {/* Document List */}
-            {documents.length > 0 && (
-              <div className="mt-4 space-y-2">
-                {documents.map((doc, index) => (
-                  <div 
-                    key={index}
-                    className="flex items-center justify-between bg-slate-900 border border-slate-700 rounded-lg px-4 py-3"
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">Condition</label>
+                  <select
+                    name="condition"
+                    value={formData.condition}
+                    onChange={handleChange}
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors appearance-none"
                   >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span className="text-xl">{getFileIcon(doc.name)}</span>
+                    <option value="NEW">New / Unworn</option>
+                    <option value="LIKE_NEW">Like New</option>
+                    <option value="GOOD">Good / Vintage</option>
+                    <option value="FAIR">Fair</option>
+                    <option value="POOR">Requires Restoration</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* AI Documents Card */}
+        <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-xl p-6 sm:p-8 space-y-6">
+          <div className="flex items-start justify-between border-b border-slate-800/60 pb-4">
+            <div>
+              <h2 className="text-lg font-bold text-white mb-1">AI Provenance & Certificates</h2>
+              <p className="text-xs text-slate-400 max-w-xl">
+                Upload authenticity certificates, service records, or appraisals. Our Gemini RAG Assistant will parse these to answer live bidder questions automatically.
+              </p>
+            </div>
+            <div className="px-3 py-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-bold flex items-center gap-1.5 shrink-0">
+              <Info className="w-3.5 h-3.5" />
+              Optional
+            </div>
+          </div>
+          
+          <div 
+            onClick={() => docInputRef.current?.click()}
+            className="border-2 border-dashed border-slate-700 bg-slate-950 rounded-2xl p-8 text-center cursor-pointer hover:border-indigo-500 transition-colors group"
+          >
+            <div className="w-16 h-16 mx-auto rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500 group-hover:text-indigo-400 group-hover:border-indigo-500/30 transition-colors mb-4">
+              <Upload className="w-8 h-8" />
+            </div>
+            <p className="text-sm font-bold text-slate-300 group-hover:text-indigo-300 transition-colors">Click to upload provenance documents</p>
+            <p className="text-xs text-slate-500 font-mono mt-1.5">PDF, DOC, DOCX — Max 10MB per file</p>
+          </div>
+          <input ref={docInputRef} type="file" accept=".pdf,.doc,.docx" multiple onChange={handleDocumentChange} className="hidden" />
+
+          {documents.length > 0 && (
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Selected Documents ({documents.length})</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {documents.map((doc, index) => (
+                  <div key={index} className="flex items-center justify-between bg-slate-950 border border-slate-800 rounded-xl p-3 group">
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      <div className="p-2 rounded-lg bg-slate-900 text-slate-400">
+                        <FileText className="w-4 h-4" />
+                      </div>
                       <div className="min-w-0">
-                        <p className="text-sm text-white truncate">{doc.name}</p>
-                        <p className="text-xs text-slate-500">{formatFileSize(doc.size)}</p>
+                        <p className="text-sm font-medium text-slate-200 truncate pr-4">{doc.name}</p>
+                        <p className="text-[10px] text-slate-500 font-mono">{formatFileSize(doc.size)}</p>
                       </div>
                     </div>
                     <button
                       type="button"
-                      onClick={() => removeDocument(index)}
-                      className="text-red-400 hover:text-red-300 transition-colors ml-3 flex-shrink-0"
+                      onClick={(e) => { e.stopPropagation(); removeDocument(index); }}
+                      className="p-1.5 rounded-lg bg-slate-900 hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 transition-colors"
                     >
-                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
+                      <X className="w-4 h-4" />
                     </button>
                   </div>
                 ))}
-                <p className="text-xs text-slate-500 mt-1">
-                  {documents.length} document{documents.length !== 1 ? 's' : ''} selected
-                </p>
               </div>
+            </div>
+          )}
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex justify-end gap-4 pt-2">
+          <Link
+            to="/seller/items"
+            className="px-6 py-3 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 font-bold text-sm transition-colors"
+          >
+            Cancel
+          </Link>
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-8 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-lg shadow-indigo-600/30 transition-transform active:scale-95 disabled:opacity-50 disabled:active:scale-100 flex items-center gap-2"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Processing...</span>
+              </>
+            ) : (
+              <span>Register Lot to Inventory</span>
             )}
-          </div>
+          </button>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Starting Price ($)</label>
-              <input
-                type="number"
-                name="startingPrice"
-                required
-                min="0"
-                step="0.01"
-                value={formData.startingPrice}
-                onChange={handleChange}
-                className="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Condition</label>
-              <select
-                name="condition"
-                value={formData.condition}
-                onChange={handleChange}
-                className="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-              >
-                <option value="NEW">New</option>
-                <option value="LIKE_NEW">Like New</option>
-                <option value="GOOD">Good</option>
-                <option value="FAIR">Fair</option>
-                <option value="POOR">Poor</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="pt-6 border-t border-slate-700 flex justify-end space-x-4">
-            <Link
-              to="/seller/items"
-              className="px-6 py-3 border border-slate-600 text-slate-300 hover:text-white rounded-lg font-medium transition-colors"
-            >
-              Cancel
-            </Link>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
-            >
-              {loading ? 'Creating...' : 'Create Item'}
-            </button>
-          </div>
-        </form>
-      </div>
+      </form>
     </div>
   );
 };

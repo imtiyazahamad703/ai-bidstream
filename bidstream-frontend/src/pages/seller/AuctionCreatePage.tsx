@@ -23,12 +23,13 @@ const AuctionCreatePage: React.FC = () => {
     const fetchAvailableItems = async () => {
       try {
         const allItems = await itemApi.getSellerItems();
-        // Only allow creating auctions for AVAILABLE items
-        setItems(allItems.filter(item => item.status === 'AVAILABLE'));
+        // Allow creating auctions for AVAILABLE items OR the specific item being rescheduled
+        const availableItems = allItems.filter(item => item.status === 'AVAILABLE' || item.id === itemIdParam);
+        setItems(availableItems);
         
         // If itemId was in URL but we don't have it selected, set it to the first available
-        if (!itemIdParam && allItems.length > 0) {
-          const firstAvailable = allItems.find(item => item.status === 'AVAILABLE');
+        if (!itemIdParam && availableItems.length > 0) {
+          const firstAvailable = availableItems.find(item => item.status === 'AVAILABLE');
           if (firstAvailable) {
             setFormData(prev => ({ ...prev, itemId: firstAvailable.id }));
           }

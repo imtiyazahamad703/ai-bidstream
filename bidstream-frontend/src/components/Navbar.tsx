@@ -1,64 +1,139 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
+import { Gavel, LogOut, UserCheck, Wallet } from 'lucide-react';
 
 const Navbar: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     logout();
     navigate('/');
   };
 
+  const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
+
   return (
-    <nav className="bg-slate-800 border-b border-slate-700 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center">
-            <Link to="/" className="flex-shrink-0 text-xl font-bold bg-gradient-to-r from-indigo-500 to-sky-500 bg-clip-text text-transparent">
-              BidStream
-            </Link>
-            <div className="hidden md:block ml-10">
-              <div className="flex items-baseline space-x-4">
-                <Link to="/auctions" className="text-slate-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                  Browse Auctions
+    <header className="sticky top-0 z-40 w-full bg-slate-950/95 backdrop-blur-xl border-b border-slate-800 transition-colors">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+        
+        {/* Brand & Left Navigation */}
+        <div className="flex items-center gap-6">
+          <Link
+            to="/"
+            className="flex items-center gap-2 group text-left focus:outline-none"
+          >
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-indigo-400 flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform">
+              <Gavel className="w-4 h-4" />
+            </div>
+            <span className="font-extrabold text-lg tracking-tight text-white font-sans">
+              Bid<span className="text-indigo-400">Stream</span>
+            </span>
+          </Link>
+
+          {/* Navigation Links */}
+          <nav className="hidden md:flex items-center gap-1 text-xs font-medium text-slate-300">
+            {!isAuthenticated && (
+              <>
+                <Link
+                  to="/about"
+                  className={`px-3 py-1.5 rounded-lg transition-colors ${
+                    isActive('/about')
+                      ? 'text-indigo-400 font-semibold bg-indigo-500/10'
+                      : 'hover:text-white hover:bg-slate-900'
+                  }`}
+                >
+                  About Us
                 </Link>
-                {isAuthenticated && user?.role === 'SELLER' && (
-                  <Link to="/seller/dashboard" className="text-slate-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                    Seller Dashboard
-                  </Link>
-                )}
-              </div>
-            </div>
-          </div>
-          <div className="hidden md:block">
-            <div className="ml-4 flex items-center md:ml-6 gap-4">
-              {isAuthenticated ? (
-                <>
-                  <span className="text-sm text-slate-400">Welcome, {user?.email}</span>
-                  <button
-                    onClick={handleLogout}
-                    className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                  >
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link to="/login" className="text-slate-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                    Sign In
-                  </Link>
-                  <Link to="/register" className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                    Create Account
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
+                <Link
+                  to="/how-it-works"
+                  className={`px-3 py-1.5 rounded-lg transition-colors ${
+                    isActive('/how-it-works')
+                      ? 'text-indigo-400 font-semibold bg-indigo-500/10'
+                      : 'hover:text-white hover:bg-slate-900'
+                  }`}
+                >
+                  How It Works
+                </Link>
+                <Link
+                  to="/contact"
+                  className={`px-3 py-1.5 rounded-lg transition-colors ${
+                    isActive('/contact')
+                      ? 'text-indigo-400 font-semibold bg-indigo-500/10'
+                      : 'hover:text-white hover:bg-slate-900'
+                  }`}
+                >
+                  Contact Support
+                </Link>
+              </>
+            )}
+
+            {isAuthenticated && user?.role === 'SELLER' && (
+              <Link
+                to="/seller/dashboard"
+                className={`px-3 py-1.5 rounded-lg transition-colors ${
+                  isActive('/seller')
+                    ? 'text-indigo-400 font-semibold bg-indigo-500/10'
+                    : 'hover:text-white hover:bg-slate-900'
+                }`}
+              >
+                Seller Dashboard
+              </Link>
+            )}
+          </nav>
         </div>
+
+        {/* Right Actions */}
+        <div className="flex items-center gap-3">
+          {isAuthenticated && user ? (
+            <div className="flex items-center gap-3 text-xs">
+              {/* User Greeting */}
+              <div className="text-slate-300 text-xs flex items-center gap-2">
+                <span className="hidden sm:inline text-slate-400">
+                  Welcome, <strong className="text-white font-normal">{user.email}</strong>
+                </span>
+                
+                {/* Role Badge */}
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-slate-800 text-slate-300 border border-slate-700">
+                  {user.role}
+                </span>
+              </div>
+
+              {/* Logout Button */}
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-medium border border-slate-800 transition-colors flex items-center gap-1"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Logout</span>
+              </button>
+            </div>
+          ) : (
+            /* Guest Actions */
+            <div className="flex items-center gap-2">
+              <Link
+                to="/login"
+                className="px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-semibold text-slate-200 transition-colors"
+              >
+                Sign In
+              </Link>
+
+              <Link
+                to="/register"
+                className="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md flex items-center gap-1.5 transition-all"
+              >
+                <UserCheck className="w-3.5 h-3.5" />
+                <span>Create Account</span>
+              </Link>
+            </div>
+          )}
+        </div>
+
       </div>
-    </nav>
+    </header>
   );
 };
 

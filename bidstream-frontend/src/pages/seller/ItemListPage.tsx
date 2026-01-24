@@ -107,11 +107,11 @@ const ItemListPage: React.FC = () => {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {items.map((item) => (
-            <div key={item.id} className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden flex flex-col">
+            <div key={item.id} className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden flex flex-col min-h-[520px]">
               <div 
-                className="h-48 bg-slate-700 flex items-center justify-center overflow-hidden cursor-pointer hover:bg-slate-600 transition-colors relative group"
+                className="h-60 w-full bg-slate-700 flex items-center justify-center overflow-hidden cursor-pointer hover:bg-slate-600 transition-colors relative group"
                 onClick={() => handleImageClick(item.id)}
               >
                 {uploadingId === item.id ? (
@@ -132,7 +132,7 @@ const ItemListPage: React.FC = () => {
                   </div>
                 )}
               </div>
-              <div className="p-5 flex-1 flex flex-col">
+              <div className="p-6 flex-1 flex flex-col space-y-3">
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="text-lg font-bold text-white truncate">{item.title}</h3>
                   <span className={`px-2 py-1 text-xs font-semibold rounded-full ${

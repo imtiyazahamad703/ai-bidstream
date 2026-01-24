@@ -1,4 +1,6 @@
 import React from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { AlertTriangle, Info, CheckCircle2, ShieldAlert } from 'lucide-react';
 
 interface Notification {
   id: string;
@@ -12,34 +14,69 @@ interface NotificationCenterProps {
 }
 
 const NotificationCenter: React.FC<NotificationCenterProps> = ({ notifications }) => {
-  if (notifications.length === 0) return null;
-
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 max-w-sm w-full">
-      {notifications.map(notif => (
-        <div 
-          key={notif.id}
-          className={`p-4 rounded-xl shadow-lg border backdrop-blur-md ${
-            notif.type === 'OUTBID' 
-              ? 'bg-red-500/20 border-red-500/50 text-red-100'
-              : notif.type === 'SUCCESS'
-                ? 'bg-green-500/20 border-green-500/50 text-green-100'
-                : 'bg-slate-800/90 border-slate-600 text-white'
-          } flex justify-between items-start animate-fade-in-up`}
-        >
-          <div className="flex flex-col">
-            <span className="font-medium text-sm">{notif.message}</span>
-            <span className="text-xs opacity-75 mt-1">
-              {new Date(notif.timestamp).toLocaleTimeString()}
-            </span>
-          </div>
-          {notif.type === 'OUTBID' && (
-            <span className="text-xl animate-pulse ml-3">⚠️</span>
-          )}
-        </div>
-      ))}
+    <div className="fixed bottom-4 right-4 z-[100] flex flex-col space-y-3 max-w-sm w-full pointer-events-none">
+      <AnimatePresence>
+        {notifications.map(notif => {
+          let Icon = Info;
+          let bgColor = 'bg-slate-900/90 border-slate-700';
+          let textColor = 'text-white';
+          let iconColor = 'text-indigo-400';
+          let title = 'System Info';
+
+          if (notif.type === 'OUTBID') {
+            Icon = ShieldAlert;
+            bgColor = 'bg-rose-950/90 border-rose-500/50';
+            textColor = 'text-rose-100';
+            iconColor = 'text-rose-400';
+            title = 'Outbid Alert';
+          } else if (notif.type === 'SUCCESS') {
+            Icon = CheckCircle2;
+            bgColor = 'bg-emerald-950/90 border-emerald-500/50';
+            textColor = 'text-emerald-100';
+            iconColor = 'text-emerald-400';
+            title = 'Success';
+          } else if (notif.type === 'WARNING') {
+            Icon = AlertTriangle;
+            bgColor = 'bg-amber-950/90 border-amber-500/50';
+            textColor = 'text-amber-100';
+            iconColor = 'text-amber-400';
+            title = 'Warning';
+          }
+
+          return (
+            <motion.div
+              key={notif.id}
+              initial={{ opacity: 0, y: 20, scale: 0.95, x: 20 }}
+              animate={{ opacity: 1, y: 0, scale: 1, x: 0 }}
+              exit={{ opacity: 0, scale: 0.95, x: 20 }}
+              layout
+              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+              className={`p-4 rounded-2xl shadow-2xl border backdrop-blur-xl ${bgColor} pointer-events-auto flex items-start gap-3`}
+            >
+              <div className="shrink-0 mt-0.5">
+                <Icon className={`w-5 h-5 ${iconColor}`} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className={`text-xs font-bold uppercase tracking-wider mb-1 ${iconColor}`}>
+                  {title}
+                </h4>
+                <p className={`font-medium text-sm leading-snug ${textColor}`}>
+                  {notif.message}
+                </p>
+                <div className="text-[10px] opacity-60 mt-2 font-mono flex items-center justify-between">
+                  <span>{new Date(notif.timestamp).toLocaleTimeString()}</span>
+                  {notif.type === 'OUTBID' && (
+                    <span className="animate-pulse">Action Required</span>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          );
+        })}
+      </AnimatePresence>
     </div>
   );
 };
 
-export default NotificationCenter;
+export default NotificationCenter; 
