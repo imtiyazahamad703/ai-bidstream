@@ -139,7 +139,7 @@ const AuctionDetailPage: React.FC = () => {
               <div className="flex justify-between text-sm">
                 <span className="text-slate-400">Ends At:</span>
                 <span className="text-white">
-                  {new Date(auction.endTime.endsWith('Z') ? auction.endTime : auction.endTime + 'Z').toLocaleString()}
+                  {new Date(auction.endTime).toLocaleString()}
                 </span>
               </div>
             </div>

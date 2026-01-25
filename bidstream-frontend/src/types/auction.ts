@@ -19,6 +19,7 @@ export interface Item {
     summary: string;
     contentExcerpt: string;
   }[];
+  documentTexts?: string[];
   attributes?: Record<string, any>;
   specifications?: Record<string, string>;
   createdAt: string;

@@ -16,8 +16,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ endTime, onExpir
 
   useEffect(() => {
     const calculateTimeLeft = () => {
-      const endStr = endTime.endsWith('Z') ? endTime : endTime + 'Z';
-      const end = new Date(endStr).getTime();
+      const end = new Date(endTime).getTime();
       const now = Date.now();
       const diff = end - now;
 

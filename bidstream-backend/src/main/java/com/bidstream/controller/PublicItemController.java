@@ -50,6 +50,7 @@ public class PublicItemController {
         dto.setImageData(item.getImageData());
         dto.setAuctionReady(item.getStatus() == com.bidstream.entity.ItemStatus.AVAILABLE);
         dto.setCreatedAt(item.getCreatedAt());
+        dto.setDocumentTexts(item.getDocumentTexts());
         return dto;
     }
 }

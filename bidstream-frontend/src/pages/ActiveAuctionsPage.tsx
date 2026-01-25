@@ -145,18 +145,18 @@ const ActiveAuctionsPage: React.FC = () => {
                     </p>
 
                     {/* Price & Ends In Info */}
-                    <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono">
-                      <div>
-                        <span className="text-[11px] uppercase text-slate-500 block">Current Bid:</span>
+                    <div className="pt-2 border-t border-slate-800/80 flex flex-col gap-2 text-xs font-mono">
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 uppercase tracking-wider font-bold">Current Bid</span>
                         <span className="text-base font-bold text-indigo-400">
                           ${currentBid.toLocaleString()}
                         </span>
                       </div>
 
-                      <div className="text-right">
-                        <span className="text-[11px] uppercase text-slate-500 block">Ends In:</span>
-                        <span className="text-sm text-slate-300 font-medium">
-                          {new Date(auction.endTime.endsWith('Z') ? auction.endTime : auction.endTime + 'Z').toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 uppercase tracking-wider font-bold">Ends At</span>
+                        <span className="text-slate-300 font-medium font-mono">
+                          {new Date(auction.endTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                         </span>
                       </div>
                     </div>

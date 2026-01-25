@@ -14,6 +14,7 @@ export interface Item {
   // Convenience getter for UI that uses "title"
   title?: string;
   condition?: string;
+  documentTexts?: string[];
 }
 
 export interface CreateItemData {

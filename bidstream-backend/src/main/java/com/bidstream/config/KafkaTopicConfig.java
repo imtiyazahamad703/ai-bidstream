@@ -13,7 +13,7 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic bidEventsTopic() {
         return TopicBuilder.name(BID_EVENTS_TOPIC)
-                .partitions(3)
+                .partitions(1)
                 .replicas(1) // Single replica for local dev
                 .build();
     }

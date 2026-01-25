@@ -77,9 +77,12 @@ public class GeminiEmbeddingService {
                 String errorMsg = e.getMessage();
                 System.out.println("Failed with Gemini API key ending in ..." + 
                     (key.length() > 4 ? key.substring(key.length() - 4) : key) + ". Reason: " + errorMsg);
+                if (e instanceof org.springframework.web.client.HttpStatusCodeException) {
+                    System.out.println("Response Body: " + ((org.springframework.web.client.HttpStatusCodeException) e).getResponseBodyAsString());
+                }
                 
                 // Add to penalty box. If 403, punish for a year, else 1 minute
-                if (errorMsg != null && errorMsg.contains("403")) {
+                if (errorMsg != null && (errorMsg.contains("403") || errorMsg.contains("400"))) {
                     penaltyBox.put(key, System.currentTimeMillis() + 31536000000L); 
                 } else {
                     penaltyBox.put(key, System.currentTimeMillis());

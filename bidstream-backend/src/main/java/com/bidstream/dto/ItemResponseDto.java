@@ -18,6 +18,7 @@ public class ItemResponseDto {
     private Boolean auctionReady;
     private String imageData;
     private LocalDateTime createdAt;
+    private java.util.List<String> documentTexts;
     
     // Getters and Setters
     public String getId() { return id; }
@@ -44,4 +45,6 @@ public class ItemResponseDto {
     public void setImageData(String imageData) { this.imageData = imageData; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public java.util.List<String> getDocumentTexts() { return documentTexts; }
+    public void setDocumentTexts(java.util.List<String> documentTexts) { this.documentTexts = documentTexts; }
 }

@@ -9,6 +9,7 @@ interface Document {
   uploadDate: string;
   summary: string;
   contentExcerpt: string;
+  fullContent?: string;
 }
 
 interface DocumentViewerModalProps {
@@ -18,6 +19,19 @@ interface DocumentViewerModalProps {
 }
 
 export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({ isOpen, onClose, documents = [] }) => {
+  const handleDownload = (doc: Document) => {
+    if (!doc.fullContent) return;
+    const blob = new Blob([doc.fullContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = doc.fileName.endsWith('.txt') ? doc.fileName : `${doc.fileName}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -77,7 +91,11 @@ export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({ isOpen
                         </div>
                       </div>
                     </div>
-                    <button className="p-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 transition-colors">
+                    <button 
+                      onClick={() => handleDownload(doc)}
+                      className="p-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 transition-colors"
+                      title="Download as Text"
+                    >
                       <Download className="w-4 h-4" />
                     </button>
                   </div>

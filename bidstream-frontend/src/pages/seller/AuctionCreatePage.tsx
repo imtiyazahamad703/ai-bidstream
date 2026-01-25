@@ -72,10 +72,12 @@ const AuctionCreatePage: React.FC = () => {
     setLoading(true);
 
     try {
+      // formData.startTime is in format "YYYY-MM-DDThh:mm" from datetime-local input.
+      // We append ":00" to match LocalDateTime expectation on backend without timezone shifting.
       const payload: CreateAuctionData = {
         itemId: formData.itemId,
-        startTime: start.toISOString().slice(0, 19),
-        endTime: end.toISOString().slice(0, 19)
+        startTime: formData.startTime.length === 16 ? `${formData.startTime}:00` : formData.startTime,
+        endTime: formData.endTime.length === 16 ? `${formData.endTime}:00` : formData.endTime
       };
       
       await auctionApi.createAuction(payload);

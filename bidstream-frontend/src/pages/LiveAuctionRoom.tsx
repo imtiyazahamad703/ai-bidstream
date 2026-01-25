@@ -42,6 +42,11 @@ const LiveAuctionRoom: React.FC = () => {
   useEffect(() => {
     const loadAuctionData = async () => {
       if (!id) return;
+      
+      // Clear previous state to prevent flickering of old data
+      setAuction(null);
+      setItem(null);
+      
       try {
         const auctionData = await auctionApi.getAuctionDetails(Number(id));
         if (auctionData.itemId) {
@@ -113,14 +118,11 @@ const LiveAuctionRoom: React.FC = () => {
             message: `Auction Ended! Winner: ${message.payload.winner}`,
             timestamp: new Date().toISOString()
           }, ...prev].slice(0, 5));
+        } else if (message.type === 'PARTICIPANT_COUNT') {
+          setParticipantsCount(message.payload.activeBidders || 1);
         }
       });
 
-      const participantSub = wsService.subscribe(`/topic/auctions/${id}/participants`, (message) => {
-        if (message.type === 'COUNT_UPDATE') {
-          setParticipantsCount(message.payload.count || Math.floor(Math.random() * 50) + 10);
-        }
-      });
 
       const notificationSub = wsService.subscribe(`/user/queue/notifications`, (message) => {
         setNotifications(prev => [{
@@ -131,16 +133,9 @@ const LiveAuctionRoom: React.FC = () => {
         }, ...prev].slice(0, 5));
       });
 
-      // Simulation for demo if backend doesn't send count
-      const simInterval = setInterval(() => {
-        setParticipantsCount(prev => Math.max(1, prev + (Math.random() > 0.5 ? 1 : -1)));
-      }, 5000);
-
       return () => {
         eventSub?.unsubscribe();
-        participantSub?.unsubscribe();
         notificationSub?.unsubscribe();
-        clearInterval(simInterval);
       };
     }
   }, [token, id, user?.email]);
@@ -284,9 +279,16 @@ const LiveAuctionRoom: React.FC = () => {
                 currentBid={currentBid}
                 onPlaceBid={async (amount) => {
                   try {
+                    console.log(`[DEBUG] Attempting to place bid of $${amount} for auction ${id}`);
                     const { bidApi } = await import('../api/bidApi');
-                    await bidApi.placeBid(Number(id), amount);
+                    const response = await bidApi.placeBid(Number(id), amount);
+                    console.log(`[DEBUG] Bid placed successfully! Response:`, response);
                   } catch (error: any) {
+                    console.error(`[DEBUG] Error placing bid for auction ${id}:`, error);
+                    if (error.response) {
+                      console.error(`[DEBUG] Backend Error Response Status:`, error.response.status);
+                      console.error(`[DEBUG] Backend Error Response Data:`, error.response.data);
+                    }
                     throw error;
                   }
                 }}
@@ -328,7 +330,22 @@ const LiveAuctionRoom: React.FC = () => {
       <DocumentViewerModal 
         isOpen={isDocsModalOpen} 
         onClose={() => setIsDocsModalOpen(false)} 
-        documents={item?.documents}
+        documents={(item?.documentTexts || []).map((text, i) => {
+          let fileName = "Document_" + (i + 1);
+          const sourceMatch = text.match(/\[Source: (.*?)\]/);
+          if (sourceMatch) {
+            fileName = sourceMatch[1];
+          }
+          return {
+            id: i,
+            fileName: fileName,
+            fileSize: Math.round(text.length / 1024) + " KB",
+            uploadDate: new Date().toLocaleDateString(),
+            summary: "Extracted Document Content",
+            contentExcerpt: text.length > 500 ? text.substring(0, 500) + "..." : text,
+            fullContent: text
+          };
+        })}
       />
     </div>
   );

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authApi, LoginData } from '../api/authApi';
 import { useAuthStore } from '../store/useAuthStore';
-import { Gavel, Mail, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Gavel, Mail, Lock, ArrowRight, ShieldCheck, Loader2 } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -42,39 +42,43 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0B0F19] p-4 relative overflow-hidden">
-      {/* Background Glows */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[120px] pointer-events-none" />
+    <div className="min-h-screen flex items-center justify-center bg-[#050B14] p-6 relative overflow-hidden font-sans">
+      {/* Background Elements */}
+      <div className="absolute top-[-15%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/15 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-[-15%] right-[-10%] w-[50%] h-[50%] bg-blue-600/15 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none mix-blend-overlay"></div>
       
-      <div className="w-full max-w-[420px] space-y-8 relative z-10">
+      <div className="w-full max-w-[440px] relative z-10 animate-fade-in-up">
         
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-400 flex items-center justify-center text-white shadow-xl shadow-indigo-500/20 mb-6">
-            <Gavel className="w-8 h-8" />
+        {/* Header Section */}
+        <div className="text-center space-y-3 mb-8">
+          <div className="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-tr from-indigo-500 via-blue-600 to-cyan-500 flex items-center justify-center text-white shadow-[0_0_40px_-10px_rgba(79,70,229,0.5)] transform transition-transform duration-500 hover:scale-105 hover:rotate-3 mb-6 relative">
+            <div className="absolute inset-0 bg-white/20 rounded-3xl blur-xl"></div>
+            <Gavel className="w-10 h-10 relative z-10" />
           </div>
-          <h2 className="text-3xl font-extrabold text-white tracking-tight">Welcome back</h2>
-          <p className="text-sm text-slate-400">
-            Sign in to access your dashboard and live rings
+          <h2 className="text-4xl font-extrabold text-white tracking-tight">Welcome Back</h2>
+          <p className="text-base text-slate-400 font-medium">
+            Sign in to access your dashboard and live rings.
           </p>
         </div>
 
-        {/* Card */}
-        <div className="bg-[#111827]/80 backdrop-blur-2xl rounded-3xl border border-white/5 p-8 sm:p-10 shadow-2xl">
+        {/* Glassmorphic Card */}
+        <div className="bg-[#0B1221]/70 backdrop-blur-3xl rounded-[2.5rem] border border-white/10 p-10 sm:p-12 shadow-2xl relative overflow-hidden group">
+          
           {error && (
-            <div className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-start gap-3 text-sm text-rose-400">
-              <span className="mt-0.5">⚠️</span>
-              <span>{error}</span>
+            <div className="mb-8 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-start gap-3 text-sm text-rose-400 animate-shake">
+              <span className="mt-0.5 text-rose-500">⚠️</span>
+              <span className="font-medium">{error}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">Email Address</label>
-              <div className="relative">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Email Field */}
+            <div className="space-y-2">
+              <label className="block text-[13px] font-bold text-slate-300 uppercase tracking-wider ml-1">Email Address</label>
+              <div className="relative group/input">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Mail className="w-4 h-4 text-slate-500" />
+                  <Mail className="w-5 h-5 text-slate-500 group-focus-within/input:text-indigo-400 transition-colors" />
                 </div>
                 <input
                   type="email"
@@ -82,20 +86,24 @@ const LoginPage: React.FC = () => {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full bg-[#0B0F19] border border-white/10 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all hover:border-white/20 text-sm"
-                  placeholder="you@example.com"
+                  className="w-full bg-[#111A2C] border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition-all text-base hover:border-white/10 shadow-inner"
+                  placeholder="name@example.com"
                 />
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">Password</label>
-                <Link to="/forgot-password" className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors font-medium">Forgot password?</Link>
+            {/* Password Field */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between ml-1">
+                <label className="block text-[13px] font-bold text-slate-300 uppercase tracking-wider">Password</label>
+                {/* Fixed the link clicking issue by giving it high z-index and relative position */}
+                <Link to="/forgot-password" className="text-[13px] text-indigo-400 hover:text-indigo-300 transition-colors font-bold relative z-20 px-2 py-1 -mr-2 rounded-lg hover:bg-indigo-500/10">
+                  Forgot password?
+                </Link>
               </div>
-              <div className="relative">
+              <div className="relative group/input">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Lock className="w-4 h-4 text-slate-500" />
+                  <Lock className="w-5 h-5 text-slate-500 group-focus-within/input:text-indigo-400 transition-colors" />
                 </div>
                 <input
                   type="password"
@@ -103,47 +111,63 @@ const LoginPage: React.FC = () => {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full bg-[#0B0F19] border border-white/10 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all hover:border-white/20 text-sm"
+                  className="w-full bg-[#111A2C] border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition-all text-base hover:border-white/10 shadow-inner tracking-widest font-medium"
                   placeholder="••••••••"
                 />
               </div>
             </div>
 
-              <button
+            {/* Submit Button */}
+            <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center items-center gap-2 py-3.5 px-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-sm shadow-lg shadow-indigo-500/25 transition-all hover:shadow-indigo-500/40 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 mt-4"
+              className="w-full flex justify-center items-center gap-3 py-4 px-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-bold text-base shadow-[0_10px_20px_-10px_rgba(79,70,229,0.6)] transition-all hover:shadow-[0_15px_25px_-10px_rgba(79,70,229,0.8)] hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 disabled:hover:-translate-y-0 mt-8"
             >
               {loading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <Loader2 className="w-6 h-6 animate-spin text-white/80" />
               ) : (
                 <>
-                  Sign In
-                  <ArrowRight className="w-4 h-4" />
+                  Sign In to BidStream
+                  <ArrowRight className="w-5 h-5 opacity-80 group-hover:translate-x-1 transition-transform" />
                 </>
               )}
             </button>
           </form>
         </div>
 
-        {/* Footer */}
-        <div className="text-center space-y-4">
-          <p className="text-sm text-slate-400">
-            Don't have an account?{' '}
-            <Link to="/register" className="text-indigo-400 font-bold hover:text-indigo-300 transition-colors">
+        {/* Footer Section */}
+        <div className="mt-12 text-center space-y-5">
+          <p className="text-base text-slate-400 font-medium">
+            New to BidStream?{' '}
+            <Link to="/register" className="text-indigo-400 font-bold hover:text-indigo-300 transition-all hover:underline underline-offset-4">
               Create an account
             </Link>
           </p>
-
-          <div className="flex items-center justify-center gap-1.5 text-xs text-slate-500">
-            <ShieldCheck className="w-4 h-4" />
-            <span>Secure encryption via TLS 1.3</span>
-          </div>
         </div>
 
       </div>
+      
+      {/* Global Style for animations */}
+      <style>{`
+        @keyframes fade-in-up {
+          0% { opacity: 0; transform: translateY(20px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+          animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-4px); }
+          75% { transform: translateX(4px); }
+        }
+        .animate-shake {
+          animation: shake 0.4s ease-in-out;
+        }
+      `}</style>
     </div>
   );
 };
 
 export default LoginPage;
+
