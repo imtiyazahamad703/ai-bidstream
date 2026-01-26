@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import emailjs from '@emailjs/browser';
 
 const ContactPage: React.FC = () => {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
@@ -6,10 +7,21 @@ const ContactPage: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate form submission
-    setIsSubmitted(true);
-    setFormData({ name: '', email: '', message: '' });
-    setTimeout(() => setIsSubmitted(false), 3000);
+    emailjs.send(
+      "service_guw7w5b",
+      "template_d7d00bo",
+      {
+        user_name: formData.name,
+        user_email: formData.email,
+        subject: "Message from BidStream",
+        message: formData.message,
+      },
+      "cDpAN3cTIyHo04PwZ"
+    ).then(() => {
+      setIsSubmitted(true);
+      setFormData({ name: '', email: '', message: '' });
+      setTimeout(() => setIsSubmitted(false), 3000);
+    }).catch((error) => console.error("EmailJS Error:", error));
   };
 
   return (
