@@ -23,13 +23,11 @@ const Navbar: React.FC = () => {
         <div className="flex items-center gap-6">
           <Link
             to="/"
-            className="flex items-center gap-2 group text-left focus:outline-none"
+            className="flex items-center gap-3 group text-left focus:outline-none"
           >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-indigo-400 flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform">
-              <Gavel className="w-4 h-4" />
-            </div>
-            <span className="font-extrabold text-lg tracking-tight text-white font-sans">
-              Bid<span className="text-indigo-400">Stream</span>
+            <img src="/logos/bidstream_logo.png" alt="BidStream Logo" className="w-10 h-10 rounded-full object-cover shadow-lg group-hover:scale-105 transition-transform mix-blend-screen" />
+            <span className="font-extrabold text-xl tracking-tight text-white font-sans">
+              Bid<span className="text-orange-400">Stream</span>
             </span>
           </Link>
 

@@ -76,24 +76,25 @@ export const LandingHero: React.FC = () => {
   };
 
   return (
-    <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 pt-12 md:pt-16 pb-12 space-y-12 min-h-[calc(100vh-64px)] flex flex-col justify-start">
-      {/* Hero Headline & Preview Card */}
+    <div className="relative w-full min-h-[calc(100vh-64px)] flex flex-col justify-start">
+      <section className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 pt-12 md:pt-16 pb-12 space-y-12">
+        {/* Hero Headline & Preview Card */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start lg:pt-6">
         {/* Left Column: Clear, Professional Headline & CTAs */}
-        <div className="lg:col-span-7 space-y-6 text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-950/60 border border-indigo-500/30 text-indigo-300 text-xs font-mono font-medium">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+        <div className="lg:col-span-7 space-y-6 text-left relative z-20">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-950/40 border border-orange-500/30 text-orange-300 text-xs font-mono font-bold shadow-[0_0_15px_rgba(249,115,22,0.15)] backdrop-blur-md">
+            <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
             <span>REAL-TIME LIVE AUCTION PLATFORM</span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
-            Institutional Live Bidding,{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-amber-300">
+          <h1 className="text-4xl sm:text-6xl font-extrabold text-white tracking-tight leading-[1.15]">
+            Institutional Live Bidding, <br className="hidden sm:block" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500 drop-shadow-sm">
               Verified by AI Provenance.
             </span>
           </h1>
 
-          <p className="text-base sm:text-lg text-slate-300 leading-relaxed max-w-xl">
+          <p className="text-base sm:text-lg text-slate-300 leading-relaxed max-w-xl font-light">
             BidStream delivers low-latency live auction rings for luxury watches, rare automobiles, and fine art. Ask questions directly to our AI Auctioneer backed by authentic inspection documents.
           </p>
 
@@ -102,7 +103,7 @@ export const LandingHero: React.FC = () => {
             <button
               type="button"
               onClick={handleExploreLiveAuctions}
-              className="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-transform active:scale-95"
+              className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-pink-600 hover:from-orange-400 hover:to-pink-500 text-white font-bold text-sm shadow-[0_0_20px_rgba(249,115,22,0.3)] flex items-center gap-2 transition-transform hover:scale-105 active:scale-95"
             >
               <Gavel className="w-4 h-4" />
               <span>Browse Live Auctions</span>
@@ -134,8 +135,8 @@ export const LandingHero: React.FC = () => {
         </div>
 
         {/* Right Column: Sleek Featured Live Auction Preview Carousel */}
-        <div className="lg:col-span-5">
-          <div className="rounded-3xl bg-slate-900 border border-slate-800 p-4 shadow-2xl hover:border-slate-700 transition-all duration-300 relative group h-[420px] sm:h-[480px] lg:h-[500px] flex flex-col">
+        <div className="lg:col-span-5 relative z-20 mt-8 lg:mt-0">
+          <div className="rounded-3xl bg-slate-900/60 backdrop-blur-xl border border-slate-700 p-4 shadow-[0_0_40px_rgba(139,92,246,0.15)] hover:border-slate-600 transition-all duration-300 relative group h-[420px] sm:h-[480px] lg:h-[500px] flex flex-col">
             
             {currentSlide < displayAuctions.length ? (
               // Regular Auction Slide
@@ -281,6 +282,7 @@ export const LandingHero: React.FC = () => {
           </p>
         </div>
       </div>
-    </section>
+      </section>
+    </div>
   );
 };
