@@ -16,6 +16,7 @@ public class ItemResponseDto {
     private Long auctionId;
     private ItemStatus status;
     private Boolean auctionReady;
+    private String imageData;
     private LocalDateTime createdAt;
     
     // Getters and Setters
@@ -39,6 +40,8 @@ public class ItemResponseDto {
     public void setStatus(ItemStatus status) { this.status = status; }
     public Boolean getAuctionReady() { return auctionReady; }
     public void setAuctionReady(Boolean auctionReady) { this.auctionReady = auctionReady; }
+    public String getImageData() { return imageData; }
+    public void setImageData(String imageData) { this.imageData = imageData; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

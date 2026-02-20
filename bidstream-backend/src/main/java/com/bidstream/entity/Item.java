@@ -19,6 +19,9 @@ public class Item {
     // Dynamic item attributes
     private Map<String, Object> attributes;
     
+    // Base64 encoded image stored in MongoDB
+    private String imageData;
+    
     // Linking to auction (Phase 4)
     private Long auctionId;
     
@@ -38,6 +41,8 @@ public class Item {
     public void setSellerEmail(String sellerEmail) { this.sellerEmail = sellerEmail; }
     public Map<String, Object> getAttributes() { return attributes; }
     public void setAttributes(Map<String, Object> attributes) { this.attributes = attributes; }
+    public String getImageData() { return imageData; }
+    public void setImageData(String imageData) { this.imageData = imageData; }
     public Long getAuctionId() { return auctionId; }
     public void setAuctionId(Long auctionId) { this.auctionId = auctionId; }
     public ItemStatus getStatus() { return status; }

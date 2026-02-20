@@ -55,7 +55,7 @@ class RedisBidCacheServiceTest {
         assertFalse(result.isPresent());
     }
 
-    @Test
+        @Test
     void updateHighestBid_SetsValueInRedis() {
         redisBidCacheService.updateHighestBid(1L, 250.0, "bidder@test.com");
 

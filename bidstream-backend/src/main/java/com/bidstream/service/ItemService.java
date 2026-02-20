@@ -69,6 +69,9 @@ public class ItemService {
             if (updatedData.getAttributes() != null) {
                 existingItem.setAttributes(updatedData.getAttributes());
             }
+            if (updatedData.getImageData() != null) {
+                existingItem.setImageData(updatedData.getImageData());
+            }
             return itemRepository.save(existingItem);
         }).orElseThrow(() -> new IllegalArgumentException("Item not found"));
     }
@@ -90,5 +93,9 @@ public class ItemService {
         if (!item.getSellerEmail().equals(sellerEmail)) {
             throw new org.springframework.security.access.AccessDeniedException("You do not own this item");
         }
+    }
+
+    public Item saveItem(Item item) {
+        return itemRepository.save(item);
     }
 }

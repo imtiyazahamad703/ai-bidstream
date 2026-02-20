@@ -37,6 +37,7 @@ public class ItemController {
         item.setDescription(requestDto.getDescription());
         item.setStartingPrice(requestDto.getStartingPrice());
         item.setAttributes(requestDto.getAttributes());
+        item.setImageData(requestDto.getImageData());
         
         Item createdItem = itemService.createItem(item, sellerEmail);
         return ResponseEntity.ok(mapToDto(createdItem));
@@ -90,9 +91,27 @@ public class ItemController {
         updatedData.setDescription(requestDto.getDescription());
         updatedData.setStartingPrice(requestDto.getStartingPrice());
         updatedData.setAttributes(requestDto.getAttributes());
+        updatedData.setImageData(requestDto.getImageData());
 
         Item updatedItem = itemService.updateItem(id, updatedData, sellerEmail);
         return ResponseEntity.ok(mapToDto(updatedItem));
+    }
+
+    @PatchMapping("/{id}/image")
+    @PreAuthorize("hasRole('SELLER')")
+    public ResponseEntity<ItemResponseDto> updateItemImage(
+            @PathVariable String id,
+            @RequestBody java.util.Map<String, String> body) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String sellerEmail = authentication.getName();
+        
+        Item item = itemService.getItemById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Item not found"));
+        itemService.verifyItemOwnership(item, sellerEmail);
+        
+        item.setImageData(body.get("imageData"));
+        Item saved = itemService.saveItem(item);
+        return ResponseEntity.ok(mapToDto(saved));
     }
 
     @DeleteMapping("/{id}")
@@ -116,6 +135,7 @@ public class ItemController {
         dto.setAttributes(item.getAttributes());
         dto.setAuctionId(item.getAuctionId());
         dto.setStatus(item.getStatus());
+        dto.setImageData(item.getImageData());
         dto.setAuctionReady(item.getStatus() == com.bidstream.entity.ItemStatus.AVAILABLE);
         dto.setCreatedAt(item.getCreatedAt());
         return dto;

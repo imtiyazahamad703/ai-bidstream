@@ -30,7 +30,7 @@ class WebSocketConnectionLifecycleTest {
         webSocketEventListener = new WebSocketEventListener(participantTrackerService, auctionEventPublisher);
     }
 
-    @Test
+        @Test
     void testSubscribeAndDisconnectLifecycle() {
         // Subscribe
         StompHeaderAccessor subscribeAccessor = StompHeaderAccessor.create(StompCommand.SUBSCRIBE);

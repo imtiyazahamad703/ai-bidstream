@@ -1,10 +1,8 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { useAuthStore } from '../../store/useAuthStore';
 
 const SellerLayout: React.FC = () => {
   const location = useLocation();
-  const user = useAuthStore((state) => state.user);
 
   const navigation = [
     { name: 'Dashboard', href: '/seller/dashboard' },

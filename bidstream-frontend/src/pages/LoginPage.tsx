@@ -9,7 +9,7 @@ const LoginPage: React.FC = () => {
   
   const [formData, setFormData] = useState<LoginData>({
     email: '',
-    passwordHash: '',
+    password: '',
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -68,9 +68,9 @@ const LoginPage: React.FC = () => {
             <label className="block text-sm font-medium text-slate-300 mb-1">Password</label>
             <input
               type="password"
-              name="passwordHash"
+              name="password"
               required
-              value={formData.passwordHash}
+              value={formData.password}
               onChange={handleChange}
               className="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             />

@@ -5,15 +5,22 @@ import ParticipantInfo from '../components/ParticipantInfo';
 import NotificationCenter from '../components/NotificationCenter';
 import BidPlacementForm from '../components/BidPlacementForm';
 import { wsService } from '../api/stompClient';
-import useAuthStore from '../store/useAuthStore';
 
 const mockBids = [
   { id: 1, auctionId: 1, bidderId: 101, amount: 250.00, timestamp: new Date().toISOString() },
   { id: 2, auctionId: 1, bidderId: 102, amount: 200.00, timestamp: new Date(Date.now() - 10000).toISOString() }
 ];
 
-const mockNotifications = [
-  { id: '1', message: 'Auction Started!', type: 'INFO' as const, timestamp: new Date().toISOString() }
+type NotificationType = 'INFO' | 'OUTBID' | 'WARNING';
+interface Notification {
+  id: string;
+  message: string;
+  type: NotificationType;
+  timestamp: string;
+}
+
+const mockNotifications: Notification[] = [
+  { id: '1', message: 'Auction Started!', type: 'INFO', timestamp: new Date().toISOString() }
 ];
 
 const mockParticipants = [
@@ -24,19 +31,19 @@ const mockParticipants = [
 
 const LiveAuctionRoom: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const token = useAuthStore(state => state.token);
+  const token = localStorage.getItem('auth_token');
   const [isConnected, setIsConnected] = useState(false);
 
   const [bids, setBids] = useState(mockBids);
-  const [participants, setParticipants] = useState(mockParticipants);
-  const [notifications, setNotifications] = useState(mockNotifications);
-  const [auctionStatus, setAuctionStatus] = useState<'ACTIVE' | 'COMPLETED'>('ACTIVE');
+  const [participants, _setParticipants] = useState(mockParticipants);
+  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
+  const [auctionStatus, _setAuctionStatus] = useState<'ACTIVE' | 'COMPLETED'>('ACTIVE');
 
   useEffect(() => {
     if (token) {
       wsService.connect(token);
       setIsConnected(true);
-      
+
       const bidSub = wsService.subscribe(`/topic/auctions/${id}/bids`, (message) => {
         setBids(prev => {
           // If the new bid is higher and from someone else, trigger outbid warning
@@ -110,7 +117,7 @@ const LiveAuctionRoom: React.FC = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="flex-1 bg-slate-900 rounded-lg flex items-center justify-center border border-slate-700 relative overflow-hidden">
             <span className="text-slate-500">Product Image Stream</span>
             {auctionStatus === 'COMPLETED' && (
@@ -125,7 +132,7 @@ const LiveAuctionRoom: React.FC = () => {
                   <div className="flex flex-col items-center">
                     <h2 className="text-3xl font-bold text-white mb-2">Auction Ended</h2>
                     <p className="text-slate-300">
-                      Winner: Bidder #{bids.length > 0 ? bids[0].bidderId : 'N/A'} 
+                      Winner: Bidder #{bids.length > 0 ? bids[0].bidderId : 'N/A'}
                       at ${bids.length > 0 ? bids[0].amount.toFixed(2) : '0.00'}
                     </p>
                   </div>
@@ -138,7 +145,7 @@ const LiveAuctionRoom: React.FC = () => {
 
       <div className="lg:col-span-1 flex flex-col space-y-4">
         <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
-          <BidPlacementForm 
+          <BidPlacementForm
             currentBid={bids.length > 0 ? bids[0].amount : 0}
             onPlaceBid={(amount) => {
               wsService.send(`/app/auctions/${id}/bid`, { amount, bidderId: 101 });
@@ -152,7 +159,7 @@ const LiveAuctionRoom: React.FC = () => {
         </div>
         <ParticipantInfo participants={participants} />
       </div>
-      
+
       <NotificationCenter notifications={notifications} />
     </div>
   );

@@ -69,7 +69,7 @@ class BidPlacementValidationTest {
         verify(redisBidCacheService).updateHighestBid(1L, 150.0, "bidder@test.com");
     }
 
-    @Test
+        @Test
     void placeBid_AmountTooLow_ShouldThrow() {
         Auction auction = createAuction(1L);
         when(auctionService.getAuctionById(1L)).thenReturn(Optional.of(auction));

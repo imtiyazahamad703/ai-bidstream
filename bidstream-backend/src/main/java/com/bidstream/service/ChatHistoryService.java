@@ -1,7 +1,7 @@
 package com.bidstream.service;
 
 import com.bidstream.domain.ChatMessage;
-import com.bidstream.repository.ChatMessageRepository;
+import com.bidstream.repository.mongo.ChatMessageRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

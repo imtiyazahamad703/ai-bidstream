@@ -30,7 +30,7 @@ class BidEventConsumerTest {
         bidEventConsumer = new BidEventConsumer(bidRepository, redisBidCacheService, auctionEventPublisher);
     }
 
-    @Test
+        @Test
     void consumeBidEvent_Success_SavesBidAndUpdateCache() {
         LocalDateTime now = LocalDateTime.now();
         BidEvent event = new BidEvent(1L, "bidder@test.com", 150.0, now, "track-123");

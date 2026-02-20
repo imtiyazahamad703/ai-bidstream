@@ -1,7 +1,7 @@
 package com.bidstream.service;
 
 import com.bidstream.domain.DocumentNode;
-import com.bidstream.repository.DocumentNodeRepository;
+import com.bidstream.repository.mongo.DocumentNodeRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;

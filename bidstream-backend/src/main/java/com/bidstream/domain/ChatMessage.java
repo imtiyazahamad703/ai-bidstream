@@ -9,14 +9,15 @@ public class ChatMessage {
 
     @Id
     private String id;
-    
+
     private Long auctionId;
     private Long userId; // The user asking the question
     private String role; // "USER" or "ASSISTANT"
     private String content;
     private Instant timestamp;
 
-    public ChatMessage() {}
+    public ChatMessage() {
+    }
 
     public ChatMessage(Long auctionId, Long userId, String role, String content) {
         this.auctionId = auctionId;
@@ -27,16 +28,51 @@ public class ChatMessage {
     }
 
     // Getters and setters
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
-    public Long getAuctionId() { return auctionId; }
-    public void setAuctionId(Long auctionId) { this.auctionId = auctionId; }
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
-    public String getContent() { return content; }
-    public void setContent(String content) { this.content = content; }
-    public Instant getTimestamp() { return timestamp; }
-    public void setTimestamp(Instant timestamp) { this.timestamp = timestamp; }
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public Long getAuctionId() {
+        return auctionId;
+    }
+
+    public void setAuctionId(Long auctionId) {
+        this.auctionId = auctionId;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public Instant getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Instant timestamp) {
+        this.timestamp = timestamp;
+    }
 }

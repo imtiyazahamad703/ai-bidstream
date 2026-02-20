@@ -10,7 +10,7 @@ const AuctionCreatePage: React.FC = () => {
   
   const [items, setItems] = useState<Item[]>([]);
   const [formData, setFormData] = useState<CreateAuctionData>({
-    itemId: itemIdParam ? parseInt(itemIdParam) : 0,
+    itemId: itemIdParam || '',
     startTime: '',
     endTime: '',
   });
@@ -47,14 +47,14 @@ const AuctionCreatePage: React.FC = () => {
     const { name, value } = e.target;
     setFormData({ 
       ...formData, 
-      [name]: name === 'itemId' ? parseInt(value) : value 
+      [name]: value 
     });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (formData.itemId === 0) {
+    if (!formData.itemId) {
       setError('Please select an item.');
       return;
     }
@@ -71,11 +71,12 @@ const AuctionCreatePage: React.FC = () => {
     setLoading(true);
 
     try {
-      // Ensure ISO string format
+      // Send datetime strings natively without toISOString() to avoid timezone mismatch
+      // with Spring Boot's LocalDateTime which expects exact local representations.
       const payload: CreateAuctionData = {
         itemId: formData.itemId,
-        startTime: start.toISOString(),
-        endTime: end.toISOString()
+        startTime: formData.startTime,
+        endTime: formData.endTime
       };
       
       await auctionApi.createAuction(payload);
@@ -128,7 +129,7 @@ const AuctionCreatePage: React.FC = () => {
                 onChange={handleChange}
                 className="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
               >
-                <option value={0} disabled>-- Select an item --</option>
+                <option value="" disabled>-- Select an item --</option>
                 {items.map(item => (
                   <option key={item.id} value={item.id}>
                     {item.title} (Starting at ${item.startingPrice})
@@ -179,7 +180,7 @@ const AuctionCreatePage: React.FC = () => {
               </Link>
               <button
                 type="submit"
-                disabled={loading || formData.itemId === 0}
+                disabled={loading || !formData.itemId}
                 className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
               >
                 {loading ? 'Scheduling...' : 'Schedule Auction'}

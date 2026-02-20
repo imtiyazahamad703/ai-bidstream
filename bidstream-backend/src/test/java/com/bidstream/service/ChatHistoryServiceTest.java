@@ -1,7 +1,7 @@
 package com.bidstream.service;
 
 import com.bidstream.domain.ChatMessage;
-import com.bidstream.repository.ChatMessageRepository;
+import com.bidstream.repository.mongo.ChatMessageRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

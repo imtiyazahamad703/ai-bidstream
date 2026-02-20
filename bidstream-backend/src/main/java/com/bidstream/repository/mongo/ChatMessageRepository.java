@@ -1,4 +1,4 @@
-package com.bidstream.repository;
+package com.bidstream.repository.mongo;
 
 import com.bidstream.domain.ChatMessage;
 import org.springframework.data.mongodb.repository.MongoRepository;

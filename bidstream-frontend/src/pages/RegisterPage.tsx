@@ -8,10 +8,9 @@ const RegisterPage: React.FC = () => {
   const setUser = useAuthStore((state) => state.setUser);
   
   const [formData, setFormData] = useState<RegistrationData>({
-    firstName: '',
-    lastName: '',
+    fullName: '',
     email: '',
-    passwordHash: '',
+    password: '',
     role: 'BIDDER',
   });
   const [error, setError] = useState<string | null>(null);
@@ -27,15 +26,9 @@ const RegisterPage: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await authApi.register(formData);
-      localStorage.setItem('auth_token', response.token);
-      setUser(response.user);
-      
-      if (response.user.role === 'SELLER') {
-        navigate('/seller/dashboard');
-      } else {
-        navigate('/auctions');
-      }
+      await authApi.register(formData);
+      // Registration successful, navigate to login
+      navigate('/login');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
@@ -55,25 +48,14 @@ const RegisterPage: React.FC = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="grid grid-cols-2 gap-4">
+          <div>
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">First Name</label>
+              <label className="block text-sm font-medium text-slate-300 mb-1">Full Name</label>
               <input
                 type="text"
-                name="firstName"
+                name="fullName"
                 required
-                value={formData.firstName}
-                onChange={handleChange}
-                className="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">Last Name</label>
-              <input
-                type="text"
-                name="lastName"
-                required
-                value={formData.lastName}
+                value={formData.fullName}
                 onChange={handleChange}
                 className="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
               />
@@ -96,9 +78,9 @@ const RegisterPage: React.FC = () => {
             <label className="block text-sm font-medium text-slate-300 mb-1">Password</label>
             <input
               type="password"
-              name="passwordHash"
+              name="password"
               required
-              value={formData.passwordHash}
+              value={formData.password}
               onChange={handleChange}
               className="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             />

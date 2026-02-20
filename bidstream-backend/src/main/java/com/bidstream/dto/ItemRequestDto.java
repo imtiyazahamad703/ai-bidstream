@@ -20,6 +20,8 @@ public class ItemRequestDto {
     
     @Size(max = 50, message = "Maximum 50 custom attributes allowed")
     private Map<String, Object> attributes;
+    
+    private String imageData;
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -29,4 +31,6 @@ public class ItemRequestDto {
     public void setStartingPrice(Double startingPrice) { this.startingPrice = startingPrice; }
     public Map<String, Object> getAttributes() { return attributes; }
     public void setAttributes(Map<String, Object> attributes) { this.attributes = attributes; }
+    public String getImageData() { return imageData; }
+    public void setImageData(String imageData) { this.imageData = imageData; }
 }

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { wsService } from '../../api/stompClient';
-import useAuthStore from '../../store/useAuthStore';
 
 const mockBids = [
   { id: 1, auctionId: 1, bidderId: 101, amount: 250.00, timestamp: new Date().toISOString() },
@@ -10,7 +9,7 @@ const mockBids = [
 
 const SellerAuctionMonitor: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const token = useAuthStore(state => state.token);
+  const token = localStorage.getItem('auth_token');
   const [bids, setBids] = useState(mockBids);
   
   useEffect(() => {
